@@ -1,0 +1,25 @@
+# Entorno virtual
+venv/
+.venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Base de datos local e instancia de Flask
+*.db
+*.sqlite3
+instance/
+
+# Archivos subidos por usuarios
+uploads/
+
+# Variables de entorno y credenciales
+.env
+
+# Editores y sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
