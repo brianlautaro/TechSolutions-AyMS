@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Destinos - FlyFlask{% endblock %}
+
+{% block content %}
+
+<!-- SLIDER PRINCIPAL -->
+{% if 'carrousel' in images and images['carrousel'] %}
+<section class="hero-slider">
+    <div class="slider-container">
+        {% for image in images['carrousel'] %}
+        <div class="slide fade">
+            <img src="{{ image.url }}" alt="Destino {{ loop.index }}">
+            {% if image.description %}
+            <div class="slide-text">{{ image.description }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <a class="prev">&#10094;</a>
+        <a class="next">&#10095;</a>
+    </div>
+</section>
+{% endif %}
+
+<!-- FILTROS -->
+{% if images %}
+<section class="filter-section">
+    <h2>Filtrar por seccion</h2>
+    <div class="filter-buttons">
+        <button class="filter-btn active" data-section="all">Todas</button>
+        {% for section in images.keys() %}
+            {% if section != 'carrousel' %}
+                <button class="filter-btn" data-section="{{ section }}">{{ section|capitalize }}</button>
+            {% endif %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- GALERIA PRINCIPAL -->
+<main class="gallery-main">
+    <h1 class="page-title">Galeria de Destinos</h1>
+
+    {% if images %}
+        {% for section, urls in images.items() %}
+            {% if section != 'carrousel' %}
+            <section class="gallery-section" data-section="{{ section }}">
+                <h2 class="gallery-title">
+                    {{ section|capitalize }}
+                    <span>({{ urls|length }} imagenes)</span>
+                </h2>
+                <div class="gallery-grid">
+                    {% for image in urls %}
+                    <div class="gallery-card">
+                        <img src="{{ image.url }}" alt="Imagen de {{ section }}">
+                        {% if image.description %}
+                        <p class="image-description">{{ image.description }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+        {% endfor %}
+    {% else %}
+        <p class="no-images">No hay imagenes disponibles todavia.</p>
+    {% endif %}
+
+    <!-- SUBIR IMAGEN -->
+    <section class="upload-section">
+        <h3>Subir nueva imagen</h3>
+        <form action="{{ url_for('s3_service.upload') }}" method="POST" enctype="multipart/form-data" class="upload-form">
+            <select name="folder">
+                <option value="banners">Banners</option>
+                <option value="cards">Cards</option>
+                <option value="carrousel">Carrousel</option>
+                <option value="contacto">Contacto</option>
+                <option value="uploads">Uploads</option>
+            </select>
+            <input type="file" name="image" accept="image/*" required>
+            <input type="text" name="description" placeholder="Descripcion de la imagen (opcional)">
+            <button class="btn-primary" type="submit">Subir imagen</button>
+        </form>
+    </section>
+</main>
+
+<script>
+// SLIDER
+let slideIndex = 0;
+const slides = document.getElementsByClassName("slide");
+const prevBtn = document.querySelector(".prev");
+const nextBtn = document.querySelector(".next");
+
+function showSlide(n) {
+    if (!slides.length) return;
+    for (let i = 0; i < slides.length; i++) slides[i].style.display = "none";
+    slideIndex = ((n - 1 + slides.length) % slides.length) + 1;
+    slides[slideIndex - 1].style.display = "block";
+}
+
+function autoSlide() {
+    showSlide(slideIndex + 1);
+    setTimeout(autoSlide, 4500);
+}
+
+if (slides.length) {
+    showSlide(1);
+    setTimeout(autoSlide, 4500);
+}
+
+if (prevBtn) prevBtn.addEventListener("click", () => showSlide(slideIndex - 1));
+if (nextBtn) nextBtn.addEventListener("click", () => showSlide(slideIndex + 1));
+
+// FILTROS
+const filterBtns = document.querySelectorAll('.filter-btn');
+const gallerySections = document.querySelectorAll('.gallery-section');
+
+filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const section = btn.dataset.section;
+        gallerySections.forEach(sec => {
+            sec.style.display = (section === 'all' || sec.dataset.section === section) ? 'block' : 'none';
+        });
+    });
+});
+</script>
+
+{% endblock %}

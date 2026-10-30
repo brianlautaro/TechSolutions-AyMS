@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Destinos - FlyFlask{% endblock %}
+
+{% block content %}
+
+<div class="page-hero">
+    <div class="page-hero-content animate">
+        <span class="section-label">Explora el mundo</span>
+        <h1>Todos los destinos</h1>
+        <p>Descubri lugares increibles alrededor del mundo.</p>
+    </div>
+</div>
+
+<!-- FILTROS -->
+<section class="filter-section">
+    <h2>Filtrar por categoria</h2>
+    <div class="filter-buttons">
+        <a href="{{ url_for('destinations.index') }}" class="filter-btn {% if not categoria or categoria == 'todos' %}active{% endif %}">Todos</a>
+        <a href="{{ url_for('destinations.index', categoria='aventura') }}" class="filter-btn {% if categoria == 'aventura' %}active{% endif %}">Aventura</a>
+        <a href="{{ url_for('destinations.index', categoria='relax') }}" class="filter-btn {% if categoria == 'relax' %}active{% endif %}">Relax</a>
+        <a href="{{ url_for('destinations.index', categoria='cultura') }}" class="filter-btn {% if categoria == 'cultura' %}active{% endif %}">Cultura</a>
+    </div>
+</section>
+
+<div class="gallery-main">
+    {% if is_admin %}
+    <div class="admin-bar">
+        <a href="{{ url_for('destinations.create') }}" class="btn-primary">
+            <i data-lucide="plus" style="width:16px;height:16px;"></i> Agregar destino
+        </a>
+    </div>
+    {% endif %}
+
+    {% if destinations %}
+    <div class="cards-grid">
+        {% for dest in destinations %}
+        <a href="{{ url_for('destinations.detail', dest_id=dest.id) }}" class="dest-card-full">
+            {% if dest.image_url %}
+            <img src="{{ dest.image_url }}" alt="{{ dest.name }}">
+            {% else %}
+            <div class="dest-card-emoji-bg">{{ dest.emoji }}</div>
+            {% endif %}
+            <div class="dest-card-full-body">
+                <span class="category-badge badge-{{ dest.category }}">{{ dest.category }}</span>
+                <h4>{{ dest.name }}</h4>
+                <p class="dest-country">{{ dest.country }}</p>
+                {% if dest.description %}
+                <p class="dest-desc">{{ dest.description[:100] }}{% if dest.description|length > 100 %}...{% endif %}</p>
+                {% endif %}
+                <div class="dest-footer">
+                    <span class="price-range">{{ dest.price_range }}</span>
+                    <span class="dest-link">Ver mas &rarr;</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="empty-icon">🌍</span>
+        <p>No hay destinos en esta categoria todavia.</p>
+        {% if is_admin %}
+        <a href="{{ url_for('destinations.create') }}" class="btn-primary">
+            <i data-lucide="plus" style="width:16px;height:16px;"></i> Agregar destino
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

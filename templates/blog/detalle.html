@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}{{ post.title }} - FlyFlask{% endblock %}
+
+{% block content %}
+
+<div class="blog-detail-layout">
+
+    <!-- ARTICULO -->
+    <article class="blog-article animate">
+        {% if post.image_url %}
+        <img src="{{ post.image_url }}" alt="{{ post.title }}" class="blog-article-img">
+        {% endif %}
+
+        <div class="blog-article-body">
+            {% if post.destination %}
+            <a href="{{ url_for('destinations.detail', dest_id=post.destination.id) }}" class="category-badge badge-{{ post.destination.category }}">
+                {{ post.destination.emoji }} {{ post.destination.name }}
+            </a>
+            {% endif %}
+
+            <h1>{{ post.title }}</h1>
+
+            <div class="blog-article-meta">
+                <span>Por {{ post.author_name }}</span>
+                <span>&mdash;</span>
+                <span>{{ post.created_at.strftime('%d de %B de %Y') }}</span>
+            </div>
+
+            <div class="blog-article-content">
+                {% for paragraph in post.content.split('\n') %}
+                    {% if paragraph.strip() %}
+                    <p>{{ paragraph }}</p>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            {% if is_admin %}
+            <div class="article-admin-actions">
+                <a href="{{ url_for('blog.edit', post_id=post.id) }}" class="btn-secondary">Editar articulo</a>
+                <form method="POST" action="{{ url_for('blog.delete', post_id=post.id) }}" style="display:inline;" onsubmit="return confirm('Eliminar este articulo?');">
+                    <button type="submit" class="btn-danger">Eliminar</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </article>
+
+    <!-- SIDEBAR -->
+    <aside class="blog-sidebar animate delay-2">
+        {% if post.destination %}
+        <div class="sidebar-card">
+            <h3>Destino relacionado</h3>
+            <a href="{{ url_for('destinations.detail', dest_id=post.destination.id) }}" class="related-dest-link">
+                <span class="related-dest-emoji">{{ post.destination.emoji }}</span>
+                <div>
+                    <strong>{{ post.destination.name }}</strong>
+                    <span>{{ post.destination.country }}</span>
+                </div>
+            </a>
+        </div>
+        {% endif %}
+
+        {% if other_posts %}
+        <div class="sidebar-card">
+            <h3>Otros articulos</h3>
+            <ul class="related-posts">
+                {% for other in other_posts %}
+                <li>
+                    <a href="{{ url_for('blog.detail', post_id=other.id) }}">{{ other.title }}</a>
+                    <span>{{ other.created_at.strftime('%d/%m/%Y') }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+    </aside>
+
+</div>
+
+{% endblock %}

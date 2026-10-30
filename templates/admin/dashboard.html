@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Panel de Admin - FlyFlask{% endblock %}
+
+{% block content %}
+<div class="main-content">
+
+    <div class="admin-header animate">
+        <h1>Panel de administracion</h1>
+        <p>Gestionas el contenido de FlyFlask Airlines.</p>
+    </div>
+
+    <!-- STATS -->
+    <div class="admin-stats animate delay-1">
+        <div class="admin-stat-card">
+            <span class="admin-stat-number">{{ total_destinations }}</span>
+            <span class="admin-stat-label">Destinos</span>
+            <a href="{{ url_for('destinations.index') }}" class="admin-stat-link">Ver todos &rarr;</a>
+        </div>
+        <div class="admin-stat-card">
+            <span class="admin-stat-number">{{ total_posts }}</span>
+            <span class="admin-stat-label">Articulos</span>
+            <a href="{{ url_for('blog.index') }}" class="admin-stat-link">Ver todos &rarr;</a>
+        </div>
+        <div class="admin-stat-card">
+            <span class="admin-stat-number">{{ total_reviews }}</span>
+            <span class="admin-stat-label">Resenas</span>
+        </div>
+    </div>
+
+    <!-- ACCIONES RAPIDAS -->
+    <div class="admin-quick-actions">
+        <h2>Acciones rapidas</h2>
+        <div class="quick-actions-grid">
+            <a href="{{ url_for('destinations.create') }}" class="quick-action-card">
+                <div class="quick-action-icon"><i data-lucide="map-pin"></i></div>
+                <h3>Nuevo destino</h3>
+                <p>Agregar un destino a la plataforma.</p>
+            </a>
+            <a href="{{ url_for('blog.create') }}" class="quick-action-card">
+                <div class="quick-action-icon"><i data-lucide="pen-line"></i></div>
+                <h3>Nuevo articulo</h3>
+                <p>Publicar un articulo en el blog.</p>
+            </a>
+            <a href="{{ url_for('s3_service.index') }}" class="quick-action-card">
+                <div class="quick-action-icon"><i data-lucide="image"></i></div>
+                <h3>Galeria</h3>
+                <p>Gestionar imagenes y archivos.</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- ULTIMOS DESTINOS -->
+    {% if recent_destinations %}
+    <div class="admin-table-section">
+        <div class="admin-table-header">
+            <h2>Ultimos destinos</h2>
+            <a href="{{ url_for('destinations.create') }}" class="btn-primary">+ Agregar</a>
+        </div>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Pais</th>
+                    <th>Categoria</th>
+                    <th>Precio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dest in recent_destinations %}
+                <tr>
+                    <td><strong>{{ dest.emoji }} {{ dest.name }}</strong></td>
+                    <td>{{ dest.country }}</td>
+                    <td><span class="category-badge badge-{{ dest.category }}">{{ dest.category }}</span></td>
+                    <td>{{ dest.price_range }}</td>
+                    <td class="table-actions">
+                        <a href="{{ url_for('destinations.detail', dest_id=dest.id) }}">Ver</a>
+                        <a href="{{ url_for('destinations.edit', dest_id=dest.id) }}">Editar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- ULTIMOS ARTICULOS -->
+    {% if recent_posts %}
+    <div class="admin-table-section">
+        <div class="admin-table-header">
+            <h2>Ultimos articulos</h2>
+            <a href="{{ url_for('blog.create') }}" class="btn-primary">+ Agregar</a>
+        </div>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Titulo</th>
+                    <th>Autor</th>
+                    <th>Destino</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in recent_posts %}
+                <tr>
+                    <td><strong>{{ post.title }}</strong></td>
+                    <td>{{ post.author_name }}</td>
+                    <td>{{ post.destination.name if post.destination else '-' }}</td>
+                    <td>{{ post.created_at.strftime('%d/%m/%Y') }}</td>
+                    <td class="table-actions">
+                        <a href="{{ url_for('blog.detail', post_id=post.id) }}">Ver</a>
+                        <a href="{{ url_for('blog.edit', post_id=post.id) }}">Editar</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

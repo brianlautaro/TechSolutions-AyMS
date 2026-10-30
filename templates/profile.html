@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% block title %}Mi Perfil - FlyFlask{% endblock %}
+
+{% block content %}
+<div class="main-content">
+
+    <!-- PERFIL -->
+    <section class="profile-card">
+        <div class="profile-avatar">
+            <img src="{{ user.picture if user.picture else 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&h=120&fit=crop&crop=face' }}" alt="{{ user.name }}">
+        </div>
+        <div class="profile-info">
+            <h1>{{ user.name }}</h1>
+            <p class="email">{{ user.email }}</p>
+            <div class="profile-actions">
+                <a href="{{ url_for('destinations.index') }}" class="btn-primary">Ver destinos</a>
+                <a href="{{ url_for('logout') }}" class="btn-secondary">Cerrar sesion</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- RECOMENDACION POR EMOCION -->
+    {% if dominant_sentiment == 'POSITIVE' %}
+    <div class="recommendation-banner positive">
+        <i data-lucide="zap" class="banner-icon"></i>
+        <div class="banner-text">
+            <h3>Estas listo para la aventura!</h3>
+            <p>Tus resenas reflejan energia positiva. Te recomendamos estos destinos de aventura.</p>
+        </div>
+    </div>
+    {% elif dominant_sentiment == 'NEGATIVE' %}
+    <div class="recommendation-banner negative">
+        <i data-lucide="sunset" class="banner-icon"></i>
+        <div class="banner-text">
+            <h3>Te mereces un descanso.</h3>
+            <p>Tus resenas sugieren que necesitas recargar energia. Estos destinos son perfectos para vos.</p>
+        </div>
+    </div>
+    {% elif dominant_sentiment == 'Neutral' %}
+    <div class="recommendation-banner neutral">
+        <i data-lucide="landmark" class="banner-icon"></i>
+        <div class="banner-text">
+            <h3>El mundo cultural te espera.</h3>
+            <p>Momento ideal para explorar nuevas culturas y experiencias enriquecedoras.</p>
+        </div>
+    </div>
+    {% else %}
+    <div class="recommendation-banner no-reviews">
+        <i data-lucide="map" class="banner-icon"></i>
+        <div class="banner-text">
+            <h3>Tu proximo destino te espera.</h3>
+            <p>Escribi tu primera resena y nuestro sistema te recomendara destinos personalizados.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if recommended_destinations %}
+    <section class="recommended-section">
+        <h2 class="section-title">Destinos recomendados para vos</h2>
+        <div class="recommended-grid">
+            {% for dest in recommended_destinations %}
+            <a href="{{ url_for('destinations.detail', dest_id=dest.id) }}" class="recommended-card">
+                {% if dest.image_url %}
+                <img src="{{ dest.image_url }}" alt="{{ dest.name }}" class="recommended-card-img">
+                {% endif %}
+                <div class="recommended-card-body">
+                    <span class="recommended-emoji">{{ dest.emoji }}</span>
+                    <strong>{{ dest.name }}</strong>
+                    <span class="recommended-country">{{ dest.country }}</span>
+                    <span class="category-badge badge-{{ dest.category }}">{{ dest.category }}</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- RESENAS -->
+    <section class="reviews-section">
+        <h2 class="section-title">Mis resenas de viaje</h2>
+        <form id="review-form" method="POST" action="{{ url_for('add_review') }}">
+            <input type="hidden" name="next" value="{{ url_for('profile') }}">
+            {% if all_destinations %}
+            <select name="destination_id" class="review-dest-select">
+                <option value="">-- Destino (opcional) --</option>
+                {% for d in all_destinations %}
+                <option value="{{ d.id }}">{{ d.name }}, {{ d.country }}</option>
+                {% endfor %}
+            </select>
+            {% endif %}
+            <textarea name="text" id="review-text" placeholder="Conta como fue tu experiencia..." required></textarea>
+            <button type="submit" class="btn-primary">Agregar resena</button>
+        </form>
+
+        {% if reviews %}
+        <ul id="reviews-list">
+            {% for review in reviews %}
+            <li>
+                <div class="review-meta">
+                    {% if review.destination %}
+                    <a href="{{ url_for('destinations.detail', dest_id=review.destination.id) }}" class="review-dest-link">
+                        {{ review.destination.emoji }} {{ review.destination.name }}
+                    </a>
+                    {% endif %}
+                    <span class="review-text">{{ review.text }}</span>
+                </div>
+                <span class="sentiment-badge badge-{{ review.sentiment }}">{{ review.sentiment }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        <canvas id="reviews-chart" width="400" height="200"></canvas>
+        {% else %}
+        <p class="empty-msg">Todavia no escribiste ninguna resena.</p>
+        {% endif %}
+    </section>
+
+    <!-- TRADUCTOR -->
+    <section class="translator-section">
+        <h2 class="section-title">Traductor de frases de viaje</h2>
+        <select id="travel-phrases">
+            <option value="Donde esta el bano?">Donde esta el bano?</option>
+            <option value="Cuanto cuesta?">Cuanto cuesta?</option>
+            <option value="Necesito ayuda">Necesito ayuda</option>
+            <option value="Como llego al aeropuerto?">Como llego al aeropuerto?</option>
+            <option value="Puedo pagar con tarjeta?">Puedo pagar con tarjeta?</option>
+        </select>
+        <div class="button-group">
+            <button id="btnTraducir" class="btn-primary">Traducir frase</button>
+        </div>
+        <div id="resultado">El modelo se cargara al primer uso...</div>
+    </section>
+
+</div>
+
+<script type="module">
+import { pipeline } from "https://cdn.jsdelivr.net/npm/@xenova/transformers";
+let translatePipeline;
+async function cargarPipeline() {
+    if (!translatePipeline) {
+        document.getElementById("resultado").innerHTML = "Cargando modelo...";
+        translatePipeline = await pipeline("translation", "Xenova/nllb-200-distilled-600M");
+    }
+}
+async function traducirTexto() {
+    const texto = document.getElementById("travel-phrases").value;
+    if (!texto) return;
+    await cargarPipeline();
+    document.getElementById("resultado").innerHTML = "Traduciendo...";
+    const result = await translatePipeline(texto, { src_lang: "spa_Latn", tgt_lang: "eng_Latn" });
+    document.getElementById("resultado").innerHTML = `<strong>Traduccion:</strong> ${result[0].translation_text}`;
+}
+document.getElementById("btnTraducir").addEventListener("click", traducirTexto);
+</script>
+
+{% if reviews %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(function() {
+    const reviews = Array.from(document.querySelectorAll('#reviews-list li'));
+    const counts = { POSITIVE: 0, NEGATIVE: 0, Neutral: 0 };
+    reviews.forEach(r => {
+        const badge = r.querySelector('.sentiment-badge');
+        if (badge) counts[badge.textContent.trim()] = (counts[badge.textContent.trim()] || 0) + 1;
+    });
+    const ctx = document.getElementById("reviews-chart").getContext("2d");
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ["Positivas", "Negativas", "Neutrales"],
+            datasets: [{ data: [counts.POSITIVE||0, counts.NEGATIVE||0, counts.Neutral||0],
+                backgroundColor: ["#1a6faf","#c0392b","#6b7c93"], borderWidth: 0 }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+})();
+</script>
+{% endif %}
+
+{% endblock %}

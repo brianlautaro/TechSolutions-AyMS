@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Acceso denegado - FlyFlask{% endblock %}
+{% block content %}
+<div class="error-page">
+    <span class="error-icon">🚫</span>
+    <h1>Acceso denegado</h1>
+    <p>No tenes permisos para acceder a esta pagina.</p>
+    <a href="{{ url_for('home') }}" class="btn-primary">Volver al inicio</a>
+</div>
+{% endblock %}

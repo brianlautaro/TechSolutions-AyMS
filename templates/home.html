@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% block title %}FlyFlask Airlines - Vola hacia tu proxima aventura{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-text">
+        <div class="hero-badge">
+            <i data-lucide="plane" style="width:13px;height:13px;"></i>
+            Aerolinea Digital
+        </div>
+        <h1>Vola hacia tu <span>proxima aventura</span></h1>
+        <p>Registra tus experiencias de viaje, explora destinos increibles y recibe recomendaciones personalizadas segun tus emociones.</p>
+        <div class="hero-actions">
+            {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('auth.login') }}" class="btn-primary">
+                    <i data-lucide="log-in" style="width:16px;height:16px;"></i>
+                    Comenzar gratis
+                </a>
+                <a href="{{ url_for('destinations.index') }}" class="btn-secondary" style="color: rgba(255,255,255,0.85); border-color: rgba(255,255,255,0.3);">
+                    Explorar destinos
+                </a>
+            {% else %}
+                <a href="{{ url_for('destinations.index') }}" class="btn-primary">
+                    <i data-lucide="map" style="width:16px;height:16px;"></i>
+                    Explorar destinos
+                </a>
+                <a href="{{ url_for('profile') }}" class="btn-secondary" style="color: rgba(255,255,255,0.85); border-color: rgba(255,255,255,0.3);">
+                    Mi perfil
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- STATS BAR -->
+<section class="stats-bar">
+    <div class="stat animate">
+        <i data-lucide="map-pin" class="stat-icon"></i>
+        <span class="stat-number">{{ total_destinations }}</span>
+        <span class="stat-label">Destinos</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat animate delay-1">
+        <i data-lucide="message-circle" class="stat-icon"></i>
+        <span class="stat-number">{{ total_reviews }}</span>
+        <span class="stat-label">Resenas</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat animate delay-2">
+        <i data-lucide="file-text" class="stat-icon"></i>
+        <span class="stat-number">{{ total_posts }}</span>
+        <span class="stat-label">Articulos</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat animate delay-3">
+        <i data-lucide="brain-circuit" class="stat-icon"></i>
+        <span class="stat-number">IA</span>
+        <span class="stat-label">Analisis emocional</span>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+    <div class="animate">
+        <span class="section-label">Por que FlyFlask</span>
+        <h2>Todo lo que necesitas para tu viaje</h2>
+        <p>Una plataforma pensada para viajeros que quieren registrar, recordar y compartir sus aventuras.</p>
+    </div>
+    <div class="feature-grid">
+        <div class="feature animate delay-1">
+            <div class="feature-icon"><i data-lucide="globe-2"></i></div>
+            <h3>Destinos sin limites</h3>
+            <p>Explora y guarda tus destinos favoritos. Organiza tu galeria de fotos por categorias y comparte tus recuerdos.</p>
+        </div>
+        <div class="feature animate delay-2">
+            <div class="feature-icon"><i data-lucide="message-circle"></i></div>
+            <h3>Resenas con sentimiento</h3>
+            <p>Escribi resenas de tus viajes y nuestro sistema de IA analiza automaticamente tus emociones.</p>
+        </div>
+        <div class="feature animate delay-3">
+            <div class="feature-icon"><i data-lucide="sparkles"></i></div>
+            <h3>Recomendaciones inteligentes</h3>
+            <p>Basado en el analisis de tus resenas, te sugerimos destinos que se adaptan a tu estado emocional.</p>
+        </div>
+        <div class="feature animate delay-4">
+            <div class="feature-icon"><i data-lucide="shield-check"></i></div>
+            <h3>Acceso seguro</h3>
+            <p>Ingresa con tu cuenta de Google. Tus datos y fotos estan protegidos en todo momento.</p>
+        </div>
+    </div>
+</section>
+
+<!-- DESTINOS DESTACADOS -->
+<section class="section-container">
+    <div class="section-header animate">
+        <div>
+            <span class="section-label">Explora el mundo</span>
+            <h2>Destinos destacados</h2>
+        </div>
+        <a href="{{ url_for('destinations.index') }}" class="btn-secondary">
+            Ver todos <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+        </a>
+    </div>
+
+    {% if featured %}
+    <div class="cards-grid">
+        {% for dest in featured %}
+        <a href="{{ url_for('destinations.detail', dest_id=dest.id) }}" class="dest-card-full animate delay-{{ loop.index if loop.index <= 4 else 4 }}">
+            {% if dest.image_url %}
+            <img src="{{ dest.image_url }}" alt="{{ dest.name }}">
+            {% else %}
+            <div class="dest-card-emoji-bg">{{ dest.emoji }}</div>
+            {% endif %}
+            <div class="dest-card-full-body">
+                <span class="category-badge badge-{{ dest.category }}">{{ dest.category }}</span>
+                <h4>{{ dest.name }}</h4>
+                <p class="dest-country">
+                    <i data-lucide="map-pin" style="width:12px;height:12px;color:var(--sky);"></i>
+                    {{ dest.country }}
+                </p>
+                {% if dest.description %}
+                <p class="dest-desc">{{ dest.description[:100] }}{% if dest.description|length > 100 %}...{% endif %}</p>
+                {% endif %}
+                <div class="dest-footer">
+                    <span class="price-range">{{ dest.price_range }}</span>
+                    <span class="dest-link">
+                        Ver mas <i data-lucide="arrow-right" style="width:12px;height:12px;"></i>
+                    </span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state animate">
+        <i data-lucide="map" style="width:48px;height:48px;color:var(--text-muted);"></i>
+        <p>Todavia no hay destinos cargados.</p>
+        {% if is_admin %}
+        <a href="{{ url_for('destinations.create') }}" class="btn-primary">Agregar el primero</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+
+<!-- BLOG RECIENTE -->
+{% if latest_posts %}
+<section class="section-alt">
+    <div class="section-header animate">
+        <div>
+            <span class="section-label">Inspiracion para viajar</span>
+            <h2>Ultimos articulos</h2>
+        </div>
+        <a href="{{ url_for('blog.index') }}" class="btn-secondary">
+            Ver todos <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+        </a>
+    </div>
+    <div class="blog-grid">
+        {% for post in latest_posts %}
+        <a href="{{ url_for('blog.detail', post_id=post.id) }}" class="blog-card animate delay-{{ loop.index }}">
+            {% if post.image_url %}
+            <img src="{{ post.image_url }}" alt="{{ post.title }}">
+            {% else %}
+            <div class="blog-card-img-placeholder"></div>
+            {% endif %}
+            <div class="blog-card-body">
+                {% if post.destination %}
+                <span class="category-badge badge-{{ post.destination.category }}">{{ post.destination.name }}</span>
+                {% endif %}
+                <h4>{{ post.title }}</h4>
+                <p>{{ post.content[:130] }}{% if post.content|length > 130 %}...{% endif %}</p>
+                <div class="blog-meta">
+                    <span>{{ post.author_name }}</span>
+                    <span>{{ post.created_at.strftime('%d/%m/%Y') }}</span>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- DESTINOS POR EMOCION -->
+<section class="emotion-section">
+    <div class="animate">
+        <span class="section-label">Recomendaciones inteligentes</span>
+        <h2>Viaja segun como te sientes</h2>
+        <p>Nuestro sistema de IA analiza tus resenas y te recomienda el destino perfecto para tu estado de animo.</p>
+    </div>
+
+    <div class="emotion-tabs animate delay-1">
+        <button class="emotion-tab active" data-tab="aventura">
+            <i data-lucide="mountain" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i>
+            Aventura
+        </button>
+        <button class="emotion-tab" data-tab="relax">
+            <i data-lucide="sun" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i>
+            Relax
+        </button>
+        <button class="emotion-tab" data-tab="cultura">
+            <i data-lucide="landmark" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;"></i>
+            Cultura
+        </button>
+    </div>
+
+    <div class="emotion-destinations active animate delay-2" id="tab-aventura">
+        <div class="dest-card"><span class="dest-emoji">🏔️</span><div class="dest-card-body"><h4>Machu Picchu, Peru</h4><p>La ciudadela inca en las nubes. Historia y aventura en cada paso.</p></div></div>
+        <div class="dest-card"><span class="dest-emoji">🌿</span><div class="dest-card-body"><h4>Patagonia, Argentina</h4><p>Glaciares y torres imponentes en el fin del mundo.</p></div></div>
+        <div class="dest-card"><span class="dest-emoji">🗼</span><div class="dest-card-body"><h4>Tokio, Japon</h4><p>Tradicion y futuro en perfecta armonia.</p></div></div>
+        <div class="dest-card"><span class="dest-emoji">🗽</span><div class="dest-card-body"><h4>Nueva York, EEUU</h4><p>La ciudad que nunca duerme. Energia pura.</p></div></div>
+    </div>
+    <div class="emotion-destinations" id="tab-relax">
+        <div class="dest-card"><span class="dest-emoji">🏝️</span><div class="dest-card-body"><h4>Maldivas</h4><p>Aguas cristalinas y bungalows sobre el mar.</p></div></div>
+        <div class="dest-card"><span class="dest-emoji">🌊</span><div class="dest-card-body"><h4>Cancun, Mexico</h4><p>Playas de arena blanca y sol caribeno.</p></div></div>
+        <div class="dest-card"><span class="dest-emoji">🌺</span><div class="dest-card-body"><h4>Bali, Indonesia</h4><p>Templos, arrozales y retiros de bienestar.</p></div></div>
+        <div class="dest-card"><span class="dest-emoji">🌅</span><div class="dest-card-body"><h4>Santorini, Grecia</h4><p>Atardeceres inolvidables sobre el Egeo.</p></div></div>
+    </div>
+    <div class="emotion-destinations" id="tab-cultura">
+        <div class="dest-card"><span class="dest-emoji">🏛️</span><div class="dest-card-body"><h4>Roma, Italia</h4><p>Milenios de historia en cada esquina.</p></div></div>
+        <div class="dest-card"><span class="dest-emoji">🥐</span><div class="dest-card-body"><h4>Paris, Francia</h4><p>Arte, moda y gastronomia europea.</p></div></div>
+        <div class="dest-card"><span class="dest-emoji">💃</span><div class="dest-card-body"><h4>Buenos Aires, Argentina</h4><p>Tango, arquitectura y vida nocturna.</p></div></div>
+        <div class="dest-card"><span class="dest-emoji">🕌</span><div class="dest-card-body"><h4>Estambul, Turquia</h4><p>El puente entre Europa y Asia.</p></div></div>
+    </div>
+</section>
+
+<!-- COMO FUNCIONA -->
+<section class="how-it-works">
+    <h2 class="animate">Como funciona FlyFlask</h2>
+    <div class="steps">
+        <div class="step animate delay-1">
+            <div class="step-number"><i data-lucide="log-in" class="step-icon"></i></div>
+            <h4>Ingresa con Google</h4>
+            <p>Crea tu cuenta en segundos de forma segura con tu perfil de Google.</p>
+        </div>
+        <div class="step animate delay-2">
+            <div class="step-number"><i data-lucide="compass" class="step-icon"></i></div>
+            <h4>Explora destinos</h4>
+            <p>Navega por nuestra galeria de destinos con informacion detallada.</p>
+        </div>
+        <div class="step animate delay-3">
+            <div class="step-number"><i data-lucide="pen-line" class="step-icon"></i></div>
+            <h4>Escribi resenas</h4>
+            <p>Conta tu experiencia. Nuestra IA analiza tus emociones automaticamente.</p>
+        </div>
+        <div class="step animate delay-4">
+            <div class="step-number"><i data-lucide="star" class="step-icon"></i></div>
+            <h4>Recibe recomendaciones</h4>
+            <p>Basado en tus emociones, te sugerimos el proximo destino ideal.</p>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+    <h2 class="animate">Listo para despegar?</h2>
+    <p class="animate delay-1">Unete a FlyFlask y empieza a registrar tus aventuras hoy mismo.</p>
+    <div class="animate delay-2">
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.login') }}" class="btn-primary" style="font-size:1.05rem;padding:1rem 2.5rem;">
+                <i data-lucide="plane" style="width:18px;height:18px;"></i>
+                Crear mi cuenta gratis
+            </a>
+        {% else %}
+            <a href="{{ url_for('destinations.index') }}" class="btn-primary" style="font-size:1.05rem;padding:1rem 2.5rem;">
+                <i data-lucide="map" style="width:18px;height:18px;"></i>
+                Explorar destinos
+            </a>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+const tabs = document.querySelectorAll('.emotion-tab');
+const panels = document.querySelectorAll('.emotion-destinations');
+tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        panels.forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+        lucide.createIcons();
+    });
+});
+</script>
+
+{% endblock %}

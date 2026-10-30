@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}{{ action }} - FlyFlask{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-card">
+        <div class="form-card-header">
+            <h1>{{ action }}</h1>
+            <p>Completa la informacion del destino.</p>
+        </div>
+
+        <form method="POST" class="admin-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Nombre del destino *</label>
+                    <input type="text" id="name" name="name" value="{{ dest.name if dest else '' }}" required placeholder="Ej: Machu Picchu">
+                </div>
+                <div class="form-group">
+                    <label for="country">Pais *</label>
+                    <input type="text" id="country" name="country" value="{{ dest.country if dest else '' }}" required placeholder="Ej: Peru">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="category">Categoria</label>
+                    <select id="category" name="category">
+                        <option value="aventura" {% if dest and dest.category == 'aventura' %}selected{% endif %}>Aventura</option>
+                        <option value="relax"    {% if dest and dest.category == 'relax'    %}selected{% endif %}>Relax</option>
+                        <option value="cultura"  {% if dest and dest.category == 'cultura'  %}selected{% endif %}>Cultura</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="price_range">Rango de precio</label>
+                    <select id="price_range" name="price_range">
+                        <option value="$"   {% if dest and dest.price_range == '$'   %}selected{% endif %}>$ (Economico)</option>
+                        <option value="$$"  {% if dest and dest.price_range == '$$'  %}selected{% endif %}>$$ (Moderado)</option>
+                        <option value="$$$" {% if dest and dest.price_range == '$$$' %}selected{% endif %}> $$$ (Premium)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="emoji">Emoji representativo</label>
+                    <input type="text" id="emoji" name="emoji" value="{{ dest.emoji if dest else '✈️' }}" placeholder="✈️">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Descripcion corta</label>
+                <textarea id="description" name="description" rows="2" placeholder="Una linea que resuma el destino...">{{ dest.description if dest else '' }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="long_description">Descripcion detallada</label>
+                <textarea id="long_description" name="long_description" rows="8" placeholder="Descripcion completa del destino, que hacer, cuando ir, datos utiles...">{{ dest.long_description if dest else '' }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="image_url">URL de imagen</label>
+                <input type="url" id="image_url" name="image_url" value="{{ dest.image_url if dest else '' }}" placeholder="https://...">
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">{{ action }}</button>
+                <a href="{{ url_for('destinations.index') }}" class="btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
