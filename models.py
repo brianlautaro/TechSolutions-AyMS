@@ -1,47 +1,90 @@
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+
+from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import check_password_hash, generate_password_hash
 
 db = SQLAlchemy()
 
-class UserProfile(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    google_id = db.Column(db.String(100), unique=True, nullable=False)
-    email = db.Column(db.String(200), nullable=False)
-    name = db.Column(db.String(200))
-    is_admin = db.Column(db.Boolean, default=False)
+# Valores posibles (así no escribimos textos sueltos por todo el código)
+ROL_CLIENTE = "cliente"
+ROL_ADMIN = "admin"
 
-class Destination(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), nullable=False)
-    country = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(500))
-    long_description = db.Column(db.Text)
-    image_url = db.Column(db.String(500))
-    category = db.Column(db.String(50), default='aventura')  # aventura / relax / cultura
-    emoji = db.Column(db.String(10), default='✈️')
-    price_range = db.Column(db.String(10), default='$$')     # $ / $$ / $$$
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+ESTADO_PENDIENTE = "pendiente"
+ESTADO_EN_CURSO = "en_curso"
+ESTADO_RECHAZADA = "rechazada"
+ESTADO_REALIZADO = "realizado"
 
-class BlogPost(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(300), nullable=False)
-    content = db.Column(db.Text, nullable=False)
-    image_url = db.Column(db.String(500))
-    author_name = db.Column(db.String(200))
-    destination_id = db.Column(db.Integer, db.ForeignKey('destination.id'), nullable=True)
-    destination = db.relationship('Destination', backref='blog_posts')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+MAX_INTENTOS = 5        # HU-02: cinco intentos fallidos
+MINUTOS_BLOQUEO = 15    # HU-02: bloqueo de 15 minutos
 
-class Review(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.String(100))
-    text = db.Column(db.String(500))
-    sentiment = db.Column(db.String(20))
-    destination_id = db.Column(db.Integer, db.ForeignKey('destination.id'), nullable=True)
-    destination = db.relationship('Destination', backref='reviews')
 
-class Image(db.Model):
+class Plan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.String(500), nullable=False)
-    description = db.Column(db.String(250))
-    section = db.Column(db.String(50), nullable=False)
+    nombre = db.Column(db.String(100), nullable=False)  # Básico, Profesional, Premium
+    tiempo_respuesta_horas = db.Column(db.Integer)
+    activo = db.Column(db.Boolean, default=True)
+
+
+class Usuario(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False)
+    apellido = db.Column(db.String(100))
+    email = db.Column(db.String(200), unique=True, nullable=False)
+    telefono = db.Column(db.String(30))          # solo lo usa el cliente
+    password_hash = db.Column(db.String(255))    # vacío si entra solo con Google
+    google_id = db.Column(db.String(100), unique=True)
+    rol = db.Column(db.String(20), default=ROL_CLIENTE, nullable=False)
+    activo = db.Column(db.Boolean, default=True)  # False = cuenta dada de baja
+    intentos_fallidos = db.Column(db.Integer, default=0)
+    bloqueado_hasta = db.Column(db.DateTime)
+    fecha_alta = db.Column(db.DateTime, default=datetime.utcnow)
+    plan_id = db.Column(db.Integer, db.ForeignKey("plan.id"))
+    plan = db.relationship("Plan")
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return bool(self.password_hash) and check_password_hash(self.password_hash, password)
+
+    @property
+    def es_admin(self):
+        return self.rol == ROL_ADMIN
+
+    @property
+    def esta_bloqueado(self):
+        return self.bloqueado_hasta is not None and self.bloqueado_hasta > datetime.utcnow()
+
+
+class Servicio(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(150), nullable=False)
+    descripcion = db.Column(db.String(500))
+    activo = db.Column(db.Boolean, default=True)
+
+
+class ServicioContratado(db.Model):
+    """Qué servicios tiene contratados cada cliente (para 'Mis servicios')."""
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
+    servicio_id = db.Column(db.Integer, db.ForeignKey("servicio.id"), nullable=False)
+    fecha_alta = db.Column(db.DateTime, default=datetime.utcnow)
+    activo = db.Column(db.Boolean, default=True)
+    usuario = db.relationship("Usuario", backref="servicios_contratados")
+    servicio = db.relationship("Servicio")
+
+
+class Solicitud(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
+    servicio_id = db.Column(db.Integer, db.ForeignKey("servicio.id"), nullable=False)
+    tipo_modificacion = db.Column(db.String(100), nullable=False)
+    descripcion = db.Column(db.Text)
+    estado = db.Column(db.String(20), default=ESTADO_PENDIENTE, nullable=False)
+    prioridad = db.Column(db.String(10))          # alta / media / baja
+    fecha_ingreso = db.Column(db.DateTime, default=datetime.utcnow)
+    fecha_resolucion = db.Column(db.DateTime)
+    motivo_rechazo = db.Column(db.String(300))
+    usuario = db.relationship("Usuario", backref="solicitudes")
+    servicio = db.relationship("Servicio")
