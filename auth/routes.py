@@ -117,3 +117,43 @@ def authorize():
 
     login_user(usuario)
     return redirect(_destino(usuario))
+
+@auth_bp.route("/registro", methods=["GET", "POST"])
+def registro():
+    if current_user.is_authenticated:
+        return redirect(_destino(current_user))
+
+    if request.method == "POST":
+        datos = {
+            "nombre": request.form.get("nombre", "").strip(),
+            "apellido": request.form.get("apellido", "").strip(),
+            "email": request.form.get("email", "").strip().lower(),
+            "telefono": request.form.get("telefono", "").strip(),
+        }
+        password = request.form.get("password", "")
+        repetir = request.form.get("repetir", "")
+
+        error = None
+        if not datos["nombre"] or not datos["apellido"] or not datos["email"]:
+            error = "Completá nombre, apellido y correo."
+        elif len(password) < 8:
+            error = "La contraseña debe tener al menos 8 caracteres."
+        elif password != repetir:
+            error = "Las contraseñas no coinciden."
+        elif Usuario.query.filter_by(email=datos["email"]).first():
+            error = "Ese correo ya está registrado."
+
+        if error:
+            flash(error, "error")
+            return render_template("auth/registro.html", **datos)
+
+        # El rol siempre es cliente: nunca se toma del formulario
+        usuario = Usuario(rol=ROL_CLIENTE, **datos)
+        usuario.set_password(password)
+        db.session.add(usuario)
+        db.session.commit()
+
+        login_user(usuario)
+        return redirect(_destino(usuario))
+
+    return render_template("auth/registro.html")
