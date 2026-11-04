@@ -1,4 +1,5 @@
 """HU-21: emitir y revocar tokens de API para sistemas externos."""
+from datetime import datetime
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
@@ -59,3 +60,16 @@ def emitir():
     # Se muestra directamente (sin redirect ni flash) para que el token
     # no quede guardado en ningún lado: se ve una sola vez.
     return _render_lista(token_nuevo=token, sistema_nuevo=registro.sistema)
+
+
+
+@integraciones_admin_bp.route("/<int:token_id>/revocar", methods=["POST"])
+def revocar(token_id):
+    registro = db.get_or_404(TokenAPI, token_id)
+    if registro.esta_revocado:
+        flash("Ese token ya estaba revocado.", "error")
+    else:
+        registro.fecha_revocacion = datetime.utcnow()
+        db.session.commit()
+        flash(f"Token de «{registro.sistema}» revocado.", "success")
+    return redirect(url_for(".listar"))

@@ -47,6 +47,7 @@
                     <th>Vence</th>
                     <th>Último uso</th>
                     <th>Estado</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -58,9 +59,17 @@
                     <td>{{ t.fecha_vencimiento.strftime('%d/%m/%Y') }}</td>
                     <td>{{ t.ultimo_uso.strftime('%d/%m/%Y %H:%M') if t.ultimo_uso else 'Nunca' }}</td>
                     <td>{{ t.estado }}</td>
+                    <td>
+                    {% if not t.esta_revocado %}
+                    <form method="post" action="{{ url_for('integraciones_admin.revocar', token_id=t.id) }}"
+                          onsubmit="return confirm('¿Revocar el token de «{{ t.sistema }}»? Dejará de funcionar de inmediato.');">
+                        <button type="submit" class="btn-danger">Revocar</button>
+                    </form>
+                    {% endif %}
+                    </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="6">Todavía no hay tokens emitidos.</td></tr>
+                <tr><td colspan="7">Todavía no hay tokens emitidos.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
