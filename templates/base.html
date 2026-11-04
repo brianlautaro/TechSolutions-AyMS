@@ -31,6 +31,9 @@
         <nav class="nav">
             {% if current_user.is_authenticated %}
             <a href="{{ url_for('panel') }}">Mi panel</a>
+            {% if not is_admin %}
+            <a href="{{ url_for('mis_servicios') }}">Mis servicios</a>
+            {% endif %}
             {% if is_admin %}
             <a href="{{ url_for('admin_dashboard') }}" class="nav-admin">Admin</a>
             {% endif %}

@@ -68,9 +68,19 @@ def run_seed():
     # Cuenta dada de baja: sirve para probar el caso "cuenta inactiva" de la HU-02
     baja = Usuario(
         nombre="Cuenta", apellido="De Baja", email="baja@ejemplo.com",
-        rol=ROL_CLIENTE, plan=planes["Básico"], activo=False,
+        telefono="+54 911 2222 3333", rol=ROL_CLIENTE, plan=planes["Básico"], activo=False,
     )
-    for usuario in (admin, mariana, gustavo, baja):
+    # Cuenta activa pero sin servicios contratados: sirve para probar el caso "sin servicios" de la HU-06
+    carla = Usuario(
+        nombre="Carla", apellido="Sinser", email="carla@ejemplo.com",
+        telefono="+54 911 2222 3333", rol=ROL_CLIENTE, plan=planes["Básico"],
+    )
+    # Cuenta activa con servicios contratados dados de baja: sirve para probar el caso "servicios dados de baja" de la HU-06
+    lucas = Usuario(
+        nombre="Lucas", apellido="Conba", email="lucas@ejemplo.com",
+        telefono="+54 911 2222 3333", rol=ROL_CLIENTE, plan=planes["Básico"],
+    )
+    for usuario in (admin, mariana, gustavo, baja, carla, lucas):
         usuario.set_password(DEMO_PASSWORD)
         db.session.add(usuario)
 
@@ -78,6 +88,8 @@ def run_seed():
         ServicioContratado(usuario=mariana, servicio=servicios[0]),
         ServicioContratado(usuario=mariana, servicio=servicios[3]),
         ServicioContratado(usuario=gustavo, servicio=servicios[1]),
+        ServicioContratado(usuario=lucas, servicio=servicios[1]),
+        ServicioContratado(usuario=lucas, servicio=servicios[4], activo=False),
     ])
 
     ahora = datetime.utcnow()

@@ -8,7 +8,7 @@ from flask import Flask, abort, redirect, render_template, session, url_for
 from flask_login import LoginManager, current_user, login_required, logout_user
 
 from auth.routes import auth_bp, oauth
-from models import Usuario, db
+from models import ServicioContratado, Usuario, db
 
 load_dotenv()
 
@@ -71,12 +71,24 @@ def home():
     return redirect(url_for("auth.login"))
 
 
+
 @app.route("/panel")
 @login_required
 def panel():
     # Panel del cliente. Lo completan HU-02 (login) y HU-06 (mis servicios).
+    
     return render_template("panel.html")
 
+@app.route("/mis-servicios")
+@login_required
+def mis_servicios():
+    contratados = (
+        ServicioContratado.query
+        .filter_by(usuario_id=current_user.id)
+        .order_by(ServicioContratado.fecha_alta.desc())
+        .all()
+    )
+    return render_template("mis_servicios.html", contratados=contratados)
 
 @app.route("/admin")
 @login_required

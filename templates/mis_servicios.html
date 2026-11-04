@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Mis servicios · Tech Solutions{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <h1 class="section-title">Mis servicios</h1>
+
+    {% if contratados %}
+    <ul class="servicios-lista">
+        {% for c in contratados %}
+        {% set activo = c.activo and c.servicio.activo %}
+        <li class="servicio-item">
+            <div class="servicio-datos">
+                <h3>{{ c.servicio.nombre }}</h3>
+                <p class="servicio-fecha">Contratado el {{ c.fecha_alta.strftime('%d/%m/%Y') }}</p>
+            </div>
+            <div class="servicio-estado">
+                {% if activo %}
+                <span class="estado-badge estado-activo">Activo</span>
+                <!-- HU-08: Botón "Solicitar modificación" (solo para servicios activos) -->
+                {% else %}
+                <span class="estado-badge estado-inactivo">Inactivo</span>
+                <small>No se pueden abrir solicitudes sobre este servicio.</small>
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">
+        <p>Todavía no tenés servicios contratados.</p>
+        <a href="#" class="btn-primary">Ver catálogo de servicios</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
