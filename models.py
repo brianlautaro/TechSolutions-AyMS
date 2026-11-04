@@ -107,10 +107,13 @@ class TokenAPI(db.Model):
     fecha_vencimiento = db.Column(db.DateTime, nullable=False)
     ultimo_uso = db.Column(db.DateTime)                       # lo actualiza la API (HU-22)
     fecha_revocacion = db.Column(db.DateTime)                 # si tiene valor, está revocado
+    ventana_inicio = db.Column(db.DateTime)                   # HU-22: inicio de la hora actual
+    consultas_en_ventana = db.Column(db.Integer, default=0)   # HU-22: consultas en esa hora
     emitido_por_id = db.Column(db.Integer, db.ForeignKey("usuario.id"))
     emitido_por = db.relationship("Usuario")
 
     PREFIJO_TOKEN = "tsk_"
+    LIMITE_POR_HORA = 100
 
     @staticmethod
     def calcular_hash(token):
@@ -159,3 +162,15 @@ class TokenAPI(db.Model):
         if self.esta_vencido:
             return "Vencido"
         return "Vigente"
+
+    def registrar_consulta(self):
+        """HU-22: cuenta una consulta. Devuelve False si ya superó el límite de la hora."""
+        ahora = datetime.utcnow()
+        if not self.ventana_inicio or ahora - self.ventana_inicio >= timedelta(hours=1):
+            self.ventana_inicio = ahora
+            self.consultas_en_ventana = 0
+        if self.consultas_en_ventana >= self.LIMITE_POR_HORA:
+            return False
+        self.consultas_en_ventana += 1
+        self.ultimo_uso = ahora
+        return True
