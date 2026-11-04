@@ -1,4 +1,6 @@
-from datetime import datetime
+import hashlib
+import secrets
+from datetime import datetime, timedelta
 
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
@@ -88,3 +90,72 @@ class Solicitud(db.Model):
     motivo_rechazo = db.Column(db.String(300))
     usuario = db.relationship("Usuario", backref="solicitudes")
     servicio = db.relationship("Servicio")
+
+
+
+class TokenAPI(db.Model):
+    """HU-21: token de acceso para un sistema externo (lo usa la API de HU-22).
+
+    Nunca se guarda el token en texto plano: solo su hash SHA-256 y los
+    primeros caracteres, para poder reconocerlo en la lista.
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    sistema = db.Column(db.String(150), nullable=False)       # sistema externo asociado
+    token_hash = db.Column(db.String(64), unique=True, nullable=False)
+    prefijo = db.Column(db.String(12), nullable=False)        # ej. "tsk_a1b2" (se muestra en la lista)
+    fecha_emision = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    fecha_vencimiento = db.Column(db.DateTime, nullable=False)
+    ultimo_uso = db.Column(db.DateTime)                       # lo actualiza la API (HU-22)
+    fecha_revocacion = db.Column(db.DateTime)                 # si tiene valor, está revocado
+    emitido_por_id = db.Column(db.Integer, db.ForeignKey("usuario.id"))
+    emitido_por = db.relationship("Usuario")
+
+    PREFIJO_TOKEN = "tsk_"
+
+    @staticmethod
+    def calcular_hash(token):
+        return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+    @classmethod
+    def emitir(cls, sistema, dias_vigencia, admin):
+        """Crea el token y devuelve (registro, token_en_texto_plano).
+
+        El texto plano solo existe en este momento: se muestra una vez y se pierde.
+        """
+        token = cls.PREFIJO_TOKEN + secrets.token_urlsafe(32)
+        registro = cls(
+            sistema=sistema,
+            token_hash=cls.calcular_hash(token),
+            prefijo=token[:8],
+            fecha_vencimiento=datetime.utcnow() + timedelta(days=dias_vigencia),
+            emitido_por=admin,
+        )
+        return registro, token
+
+    @classmethod
+    def buscar_valido(cls, token):
+        """Para HU-22: devuelve el token si existe, no fue revocado y está vigente."""
+        if not token:
+            return None
+        registro = cls.query.filter_by(token_hash=cls.calcular_hash(token)).first()
+        return registro if registro and registro.esta_vigente else None
+
+    @property
+    def esta_revocado(self):
+        return self.fecha_revocacion is not None
+
+    @property
+    def esta_vencido(self):
+        return self.fecha_vencimiento <= datetime.utcnow()
+
+    @property
+    def esta_vigente(self):
+        return not self.esta_revocado and not self.esta_vencido
+
+    @property
+    def estado(self):
+        if self.esta_revocado:
+            return "Revocado"
+        if self.esta_vencido:
+            return "Vencido"
+        return "Vigente"
