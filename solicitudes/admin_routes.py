@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from flask import Blueprint, abort, flash, redirect, request, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
 from models import (
-    db, Solicitud,
+    db, Solicitud, PRIORIDADES,
     ESTADO_PENDIENTE, ESTADO_EN_CURSO, ESTADO_RECHAZADA, ESTADO_REALIZADO,
 )
 
@@ -62,3 +62,14 @@ def rechazar(solicitud_id):
 @solicitudes_admin_bp.route("/<int:solicitud_id>/finalizar", methods=["POST"])
 def finalizar(solicitud_id):
     return _cambiar_estado(solicitud_id, ESTADO_REALIZADO)
+
+
+@solicitudes_admin_bp.route("/<int:solicitud_id>")
+def detalle(solicitud_id):
+    """HU-12 (y la bandeja de HU-11 enlaza acá): detalle de una solicitud."""
+    solicitud = db.get_or_404(Solicitud, solicitud_id)
+    return render_template(
+        "admin/solicitud_detalle.html",
+        solicitud=solicitud,
+        prioridades=PRIORIDADES,
+    )
