@@ -1,6 +1,7 @@
 import os
 
 from solicitudes.admin_routes import solicitudes_admin_bp
+from integraciones.admin_routes import integraciones_admin_bp
 from dotenv import load_dotenv
 from flask import Flask, abort, redirect, render_template, session, url_for
 from flask_login import LoginManager, current_user, login_required, logout_user
@@ -38,6 +39,7 @@ login_manager.login_view = "auth.login"
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(solicitudes_admin_bp)
+app.register_blueprint(integraciones_admin_bp)
 
 
 @login_manager.user_loader
