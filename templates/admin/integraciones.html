@@ -13,7 +13,29 @@
         {% endfor %}
     {% endwith %}
 
-    <!-- acá va el formulario para emitir un token -->
+        {% if token_nuevo %}
+    <div class="token-nuevo">
+        <strong>Token emitido para «{{ sistema_nuevo }}».</strong>
+        <p>Copialo ahora: por seguridad no se vuelve a mostrar.</p>
+        <code id="token-texto">{{ token_nuevo }}</code>
+        <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('token-texto').textContent)">Copiar</button>
+    </div>
+    {% endif %}
+
+    <form class="form-token" method="post" action="{{ url_for('integraciones_admin.emitir') }}">
+        <h2>Emitir nuevo token</h2>
+        <label for="sistema">Sistema externo</label>
+        <input type="text" id="sistema" name="sistema" maxlength="150" required placeholder="Ej.: CRM Ventas">
+
+        <label for="vigencia">Vigencia</label>
+        <select id="vigencia" name="vigencia" required>
+            {% for d in vigencias %}
+            <option value="{{ d }}">{{ d }} días</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="btn-primary">Emitir token</button>
+    </form>
 
     <div class="admin-table-section">
         <table class="admin-table">
@@ -50,5 +72,10 @@
     .msg { padding: .7rem; border-radius: 8px; margin: 0; }
     .msg-error { background: #fde8e8; color: #9b1c1c; }
     .msg-success { background: #e6f6ea; color: #1e6b34; }
+        .token-nuevo { padding: 1rem; border-radius: 8px; background: #fff7e0; border: 1px solid #e8c04a; display: flex; flex-direction: column; gap: .5rem; }
+    .token-nuevo code { word-break: break-all; font-size: .95rem; padding: .5rem; background: #fff; border-radius: 6px; }
+    .token-nuevo button { align-self: flex-start; cursor: pointer; }
+    .form-token { display: flex; flex-direction: column; gap: .5rem; max-width: 420px; }
+    .form-token input, .form-token select { padding: .6rem; font: inherit; border-radius: 8px; }
 </style>
 {% endblock %}

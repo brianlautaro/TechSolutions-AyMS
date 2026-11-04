@@ -1,8 +1,8 @@
 """HU-21: emitir y revocar tokens de API para sistemas externos."""
-from flask import Blueprint, abort, redirect, render_template, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
-from models import TokenAPI
+from models import TokenAPI, db
 
 integraciones_admin_bp = Blueprint(
     "integraciones_admin", __name__, url_prefix="/admin/integraciones"
@@ -34,3 +34,28 @@ def _render_lista(token_nuevo=None, sistema_nuevo=None):
 @integraciones_admin_bp.route("/")
 def listar():
     return _render_lista()
+
+
+
+@integraciones_admin_bp.route("/emitir", methods=["POST"])
+def emitir():
+    sistema = request.form.get("sistema", "").strip()
+    try:
+        dias = int(request.form.get("vigencia", ""))
+    except ValueError:
+        dias = None
+
+    if not sistema:
+        flash("Indicá el sistema externo.", "error")
+        return redirect(url_for(".listar"))
+    if dias not in VIGENCIAS:
+        flash("Elegí una vigencia válida.", "error")
+        return redirect(url_for(".listar"))
+
+    registro, token = TokenAPI.emitir(sistema[:150], dias, current_user)
+    db.session.add(registro)
+    db.session.commit()
+
+    # Se muestra directamente (sin redirect ni flash) para que el token
+    # no quede guardado en ningún lado: se ve una sola vez.
+    return _render_lista(token_nuevo=token, sistema_nuevo=registro.sistema)
