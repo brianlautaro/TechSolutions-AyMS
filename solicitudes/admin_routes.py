@@ -73,3 +73,30 @@ def detalle(solicitud_id):
         solicitud=solicitud,
         prioridades=PRIORIDADES,
     )
+
+
+@solicitudes_admin_bp.route("/<int:solicitud_id>/prioridad", methods=["POST"])
+def cambiar_prioridad(solicitud_id):
+    solicitud = db.get_or_404(Solicitud, solicitud_id)
+    volver = redirect(url_for(".detalle", solicitud_id=solicitud.id))
+
+    if not solicitud.admite_cambio_prioridad:
+        flash("No se puede cambiar la prioridad de una solicitud finalizada o rechazada.", "error")
+        return volver
+
+    nueva = request.form.get("prioridad", "")
+    if nueva not in PRIORIDADES:
+        flash("Elegí una prioridad válida: alta, media o baja.", "error")
+        return volver
+
+    if nueva == solicitud.prioridad:
+        flash("La solicitud ya tenía esa prioridad.", "error")
+        return volver
+
+    solicitud.prioridad = nueva
+    solicitud.prioridad_modificada_por = current_user
+    solicitud.fecha_cambio_prioridad = datetime.utcnow()
+    db.session.commit()
+
+    flash(f"Prioridad actualizada a «{nueva}».", "success")
+    return volver
