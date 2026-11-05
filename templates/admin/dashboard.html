@@ -12,6 +12,7 @@
     <h1>Panel de administración</h1>
     <p>Hola, {{ current_user.nombre }}.</p>
     <p><a href="{{ url_for('integraciones_admin.listar') }}">Integraciones (tokens de API)</a></p>
+    <p><a href="{{ url_for('reportes_admin.generar') }}">Reportes</a></p>
 
     {% with mensajes = get_flashed_messages(with_categories=true) %}
         {% for categoria, mensaje in mensajes %}

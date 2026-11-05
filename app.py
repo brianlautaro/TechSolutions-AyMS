@@ -6,6 +6,7 @@ from api.routes import api_bp
 from dotenv import load_dotenv
 from flask import Flask, abort, redirect, render_template, request, session, url_for
 from flask_login import LoginManager, current_user, login_required, logout_user
+from reportes.admin_routes import reportes_admin_bp
 
 from auth.routes import auth_bp, oauth
 from models import ESTADO_PENDIENTE, ESTADOS, PRIORIDADES, ServicioContratado, Solicitud, Usuario, db
@@ -42,6 +43,7 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(solicitudes_admin_bp)
 app.register_blueprint(integraciones_admin_bp)
 app.register_blueprint(api_bp)
+app.register_blueprint(reportes_admin_bp)
 
 
 @login_manager.user_loader
