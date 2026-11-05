@@ -5,6 +5,7 @@ from datetime import datetime
 
 from flask import Blueprint, Response, abort, redirect, render_template, request, url_for
 from flask_login import current_user
+from fpdf import FPDF
 
 from reportes.generadores import REPORTES
 
@@ -67,7 +68,9 @@ def descargar(formato):
 
     if formato == "csv":
         return _respuesta_csv(nombre, columnas, filas)
-    # Paso 3: acá se agrega el PDF
+    if formato == "pdf":
+        titulo = REPORTES[tipo]["titulo"]
+        return _respuesta_pdf(nombre, titulo, desde, hasta, columnas, filas)
     abort(404)
 
 
@@ -83,4 +86,44 @@ def _respuesta_csv(nombre, columnas, filas):
         contenido,
         mimetype="text/csv",
         headers={"Content-Disposition": f'attachment; filename="{nombre}.csv"'},
+    )
+
+
+def _latin1(valor):
+    """Las fuentes básicas del PDF solo soportan latin-1 (incluye á, é, ñ...).
+    Cualquier otro carácter (ej. un emoji) se reemplaza por '?' en vez de romper."""
+    return str(valor).encode("latin-1", "replace").decode("latin-1")
+
+
+def _respuesta_pdf(nombre, titulo, desde, hasta, columnas, filas):
+    pdf = FPDF(orientation="L", format="A4")  # horizontal: entran más columnas
+    pdf.add_page()
+
+    pdf.set_font("Helvetica", "B", 14)
+    pdf.cell(0, 10, _latin1(f"Tech Solutions · Reporte de {titulo}"),
+             new_x="LMARGIN", new_y="NEXT")
+    pdf.set_font("Helvetica", size=10)
+    pdf.cell(0, 6, _latin1(
+        f"Período: {desde:%d/%m/%Y} a {hasta:%d/%m/%Y} · "
+        f"Generado: {datetime.now():%d/%m/%Y %H:%M}"
+    ), new_x="LMARGIN", new_y="NEXT")
+    pdf.ln(4)
+
+    if not filas:
+        pdf.cell(0, 8, "No hay datos en el rango elegido.", new_x="LMARGIN", new_y="NEXT")
+
+    pdf.set_font("Helvetica", size=8)
+    with pdf.table() as tabla:
+        encabezado = tabla.row()
+        for columna in columnas:
+            encabezado.cell(_latin1(columna))
+        for fila in filas:
+            renglon = tabla.row()
+            for valor in fila:
+                renglon.cell(_latin1(valor))
+
+    return Response(
+        bytes(pdf.output()),
+        mimetype="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{nombre}.pdf"'},
     )

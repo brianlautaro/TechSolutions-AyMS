@@ -38,7 +38,7 @@
     <p class="descargas">
         Descargar:
         <a href="{{ url_for('reportes_admin.descargar', formato='csv', **filtros) }}">CSV</a>
-        <!-- Paso 3: link al PDF -->
+        <a href="{{ url_for('reportes_admin.descargar', formato='pdf', **filtros) }}">PDF</a>
     </p>
 
     <div class="admin-table-section">
