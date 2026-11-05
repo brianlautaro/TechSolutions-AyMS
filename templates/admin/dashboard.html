@@ -2,12 +2,99 @@
 
 {% block title %}Administración · Tech Solutions{% endblock %}
 
+{% set NOMBRE_ESTADO = {
+    'pendiente': 'Pendiente', 'en_curso': 'En curso',
+    'rechazada': 'Rechazada', 'realizado': 'Realizado'
+} %}
+
 {% block content %}
-<section>
+<section class="bandeja">
     <h1>Panel de administración</h1>
     <p>Hola, {{ current_user.nombre }}.</p>
-        <p><a href="{{ url_for('integraciones_admin.listar') }}">Integraciones (tokens de API)</a></p>
+    <p><a href="{{ url_for('integraciones_admin.listar') }}">Integraciones (tokens de API)</a></p>
 
-    <!-- HU-11: acá va la bandeja de solicitudes -->
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+        {% for categoria, mensaje in mensajes %}
+            <p class="msg msg-{{ categoria }}">{{ mensaje }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    <h2>Bandeja de solicitudes</h2>
+
+    <!-- Filtros: method="get" hace que viajen en la URL (/admin?estado=...&prioridad=...) -->
+    <form class="filtros" method="get" action="{{ url_for('admin_dashboard') }}">
+        <label>Estado
+            <select name="estado">
+                <option value="" {% if not filtros.estado %}selected{% endif %}>Todos</option>
+                {% for e in estados %}
+                <option value="{{ e }}" {% if filtros.estado == e %}selected{% endif %}>{{ NOMBRE_ESTADO[e] }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Prioridad
+            <select name="prioridad">
+                <option value="">Todas</option>
+                {% for p in prioridades %}
+                <option value="{{ p }}" {% if filtros.prioridad == p %}selected{% endif %}>{{ p|capitalize }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Desde
+            <input type="date" name="desde" value="{{ filtros.desde }}">
+        </label>
+        <label>Hasta
+            <input type="date" name="hasta" value="{{ filtros.hasta }}">
+        </label>
+        <button type="submit" class="btn-primary">Filtrar</button>
+        <a href="{{ url_for('admin_dashboard') }}">Limpiar</a>
+    </form>
+
+    {% if not hay_pendientes %}
+    <p class="msg msg-info">No hay solicitudes pendientes por atender. 🎉</p>
+    {% endif %}
+
+    {% if solicitudes %}
+    <div class="admin-table-section">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>Servicio</th>
+                    <th>Ingreso</th>
+                    <th>Prioridad</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in solicitudes %}
+                <tr>
+                    <td>{{ s.id }}</td>
+                    <td>{{ s.usuario.nombre }} {{ s.usuario.apellido or '' }}</td>
+                    <td>{{ s.servicio.nombre }}</td>
+                    <td>{{ s.fecha_ingreso.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ (s.prioridad or 'sin asignar')|capitalize }}</td>
+                    <td>{{ NOMBRE_ESTADO.get(s.estado, s.estado) }}</td>
+                    <td><a href="{{ url_for('solicitudes_admin.detalle', solicitud_id=s.id) }}">Ver</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% elif hay_pendientes or filtros.estado != 'pendiente' %}
+    <p class="msg msg-info">Ninguna solicitud cumple con el filtro elegido.</p>
+    {% endif %}
 </section>
+
+<style>
+    .bandeja { display: flex; flex-direction: column; gap: 1rem; }
+    .filtros { display: flex; flex-wrap: wrap; gap: .8rem; align-items: flex-end; }
+    .filtros label { display: flex; flex-direction: column; gap: .25rem; font-size: .85rem; font-weight: 600; }
+    .filtros select, .filtros input { padding: .5rem; font: inherit; border-radius: 8px; }
+    .msg { padding: .7rem; border-radius: 8px; margin: 0; }
+    .msg-error { background: #fde8e8; color: #9b1c1c; }
+    .msg-success { background: #e6f6ea; color: #1e6b34; }
+    .msg-info { background: #e8f0fd; color: #1c3f9b; }
+</style>
 {% endblock %}
