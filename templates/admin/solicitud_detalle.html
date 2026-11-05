@@ -40,6 +40,14 @@
 
         <dt>Ingresó</dt>
         <dd>{{ solicitud.fecha_ingreso.strftime('%d/%m/%Y %H:%M') }}</dd>
+                {% if solicitud.estado == 'rechazada' %}
+        <dt>Motivo del rechazo</dt>
+        <dd>{{ solicitud.motivo_rechazo }}</dd>
+        {% endif %}
+        {% if solicitud.fecha_resolucion %}
+        <dt>Resuelta</dt>
+        <dd>{{ solicitud.fecha_resolucion.strftime('%d/%m/%Y %H:%M') }}</dd>
+        {% endif %}
     </dl>
 
     <h2>Prioridad</h2>
@@ -76,6 +84,23 @@
     {% else %}
     <p class="msg msg-error">La solicitud está {{ solicitud.estado }}: su prioridad ya no se puede modificar.</p>
     {% endif %}
+    <h2>Acciones</h2>
+{% if solicitud.estado == 'pendiente' %}
+<form method="post" action="{{ url_for('solicitudes_admin.aprobar', solicitud_id=solicitud.id) }}">
+    <button type="submit" class="btn-primary">Aprobar</button>
+</form>
+<form method="post" action="{{ url_for('solicitudes_admin.rechazar', solicitud_id=solicitud.id) }}">
+    <input type="text" name="motivo" maxlength="300" required placeholder="Motivo del rechazo">
+    <button type="submit">Rechazar</button>
+</form>
+{% elif solicitud.estado == 'en_curso' %}
+<form method="post" action="{{ url_for('solicitudes_admin.finalizar', solicitud_id=solicitud.id) }}"
+      onsubmit="return confirm('¿Marcar la solicitud como realizada?');">
+    <button type="submit" class="btn-primary">Finalizar</button>
+</form>
+{% else %}
+<p class="msg msg-info">La solicitud está {{ solicitud.estado }}: no admite más acciones.</p>
+{% endif %}
 </section>
 
 <style>
@@ -87,5 +112,6 @@
     .msg-error { background: #fde8e8; color: #9b1c1c; }
     .msg-success { background: #e6f6ea; color: #1e6b34; }
     .form-prioridad { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+    .msg-info { background: #e8f0fd; color: #1c3f9b; }
 </style>
 {% endblock %}
