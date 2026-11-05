@@ -1,14 +1,14 @@
 import os
 
-from solicitudes.admin_routes import solicitudes_admin_bp
+from solicitudes.admin_routes import consultar_bandeja, solicitudes_admin_bp
 from integraciones.admin_routes import integraciones_admin_bp
 from api.routes import api_bp
 from dotenv import load_dotenv
-from flask import Flask, abort, redirect, render_template, session, url_for
+from flask import Flask, abort, redirect, render_template, request, session, url_for
 from flask_login import LoginManager, current_user, login_required, logout_user
 
 from auth.routes import auth_bp, oauth
-from models import ServicioContratado, Usuario, db
+from models import ESTADO_PENDIENTE, ESTADOS, PRIORIDADES, ServicioContratado, Solicitud, Usuario, db
 
 load_dotenv()
 
@@ -95,8 +95,17 @@ def mis_servicios():
 def admin_dashboard():
     if not current_user.es_admin:
         abort(403)
-    # Lo completa HU-11 (bandeja de solicitudes).
-    return render_template("admin/dashboard.html")
+    # HU-11: bandeja de solicitudes con filtros
+    solicitudes, filtros = consultar_bandeja(request.args)
+    hay_pendientes = Solicitud.query.filter_by(estado=ESTADO_PENDIENTE).count() > 0
+    return render_template(
+        "admin/dashboard.html",
+        solicitudes=solicitudes,
+        filtros=filtros,
+        estados=ESTADOS,
+        prioridades=PRIORIDADES,
+        hay_pendientes=hay_pendientes,
+    )
 
 
 @app.route("/logout")

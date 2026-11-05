@@ -1,11 +1,14 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
+from sqlalchemy import case
+
 from models import (
-    db, Solicitud, PRIORIDADES,
+    db, Solicitud, PRIORIDADES, ESTADOS,
     ESTADO_PENDIENTE, ESTADO_EN_CURSO, ESTADO_RECHAZADA, ESTADO_REALIZADO,
+    PRIORIDAD_ALTA, PRIORIDAD_MEDIA, PRIORIDAD_BAJA,
 )
 
 solicitudes_admin_bp = Blueprint(
@@ -25,6 +28,47 @@ def solo_admin():
         return redirect(url_for("auth.login"))
     if not current_user.es_admin:
         abort(403)
+        
+
+def _parsear_fecha(texto):
+    """Convierte 'AAAA-MM-DD' (lo que manda <input type="date">) en datetime, o None."""
+    try:
+        return datetime.strptime(texto, "%Y-%m-%d")
+    except (TypeError, ValueError):
+        return None
+
+
+def consultar_bandeja(args):
+    """HU-11: devuelve (solicitudes, filtros) según los parámetros de la URL."""
+    filtros = {
+        # Sin parámetro 'estado' se muestran las pendientes; estado="" significa "todos"
+        "estado": args.get("estado", ESTADO_PENDIENTE),
+        "prioridad": args.get("prioridad", ""),
+        "desde": args.get("desde", ""),
+        "hasta": args.get("hasta", ""),
+    }
+
+    consulta = Solicitud.query
+    if filtros["estado"] in ESTADOS:
+        consulta = consulta.filter(Solicitud.estado == filtros["estado"])
+    if filtros["prioridad"] in PRIORIDADES:
+        consulta = consulta.filter(Solicitud.prioridad == filtros["prioridad"])
+
+    desde = _parsear_fecha(filtros["desde"])
+    hasta = _parsear_fecha(filtros["hasta"])
+    if desde:
+        consulta = consulta.filter(Solicitud.fecha_ingreso >= desde)
+    if hasta:
+        # "hasta" incluye todo ese día: menor que el día siguiente a las 00:00
+        consulta = consulta.filter(Solicitud.fecha_ingreso < hasta + timedelta(days=1))
+
+    orden_prioridad = case(
+        {PRIORIDAD_ALTA: 0, PRIORIDAD_MEDIA: 1, PRIORIDAD_BAJA: 2},
+        value=Solicitud.prioridad,
+        else_=3,  # sin prioridad, al final
+    )
+    solicitudes = consulta.order_by(orden_prioridad, Solicitud.fecha_ingreso).all()
+    return solicitudes, filtros
 
 
 def _cambiar_estado(solicitud_id, nuevo, motivo=None):

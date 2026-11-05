@@ -16,6 +16,7 @@ ESTADO_PENDIENTE = "pendiente"
 ESTADO_EN_CURSO = "en_curso"
 ESTADO_RECHAZADA = "rechazada"
 ESTADO_REALIZADO = "realizado"
+ESTADOS = [ESTADO_PENDIENTE, ESTADO_EN_CURSO, ESTADO_RECHAZADA, ESTADO_REALIZADO]
 
 MAX_INTENTOS = 5        # HU-02: cinco intentos fallidos
 MINUTOS_BLOQUEO = 15    # HU-02: bloqueo de 15 minutos
