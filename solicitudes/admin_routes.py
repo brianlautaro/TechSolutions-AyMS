@@ -1,10 +1,10 @@
 from datetime import datetime
 
-from flask import Blueprint, abort, flash, redirect, request, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
 from models import (
-    db, Solicitud,
+    db, Solicitud, PRIORIDADES,
     ESTADO_PENDIENTE, ESTADO_EN_CURSO, ESTADO_RECHAZADA, ESTADO_REALIZADO,
 )
 
@@ -62,3 +62,41 @@ def rechazar(solicitud_id):
 @solicitudes_admin_bp.route("/<int:solicitud_id>/finalizar", methods=["POST"])
 def finalizar(solicitud_id):
     return _cambiar_estado(solicitud_id, ESTADO_REALIZADO)
+
+
+@solicitudes_admin_bp.route("/<int:solicitud_id>")
+def detalle(solicitud_id):
+    """HU-12 (y la bandeja de HU-11 enlaza acá): detalle de una solicitud."""
+    solicitud = db.get_or_404(Solicitud, solicitud_id)
+    return render_template(
+        "admin/solicitud_detalle.html",
+        solicitud=solicitud,
+        prioridades=PRIORIDADES,
+    )
+
+
+@solicitudes_admin_bp.route("/<int:solicitud_id>/prioridad", methods=["POST"])
+def cambiar_prioridad(solicitud_id):
+    solicitud = db.get_or_404(Solicitud, solicitud_id)
+    volver = redirect(url_for(".detalle", solicitud_id=solicitud.id))
+
+    if not solicitud.admite_cambio_prioridad:
+        flash("No se puede cambiar la prioridad de una solicitud finalizada o rechazada.", "error")
+        return volver
+
+    nueva = request.form.get("prioridad", "")
+    if nueva not in PRIORIDADES:
+        flash("Elegí una prioridad válida: alta, media o baja.", "error")
+        return volver
+
+    if nueva == solicitud.prioridad:
+        flash("La solicitud ya tenía esa prioridad.", "error")
+        return volver
+
+    solicitud.prioridad = nueva
+    solicitud.prioridad_modificada_por = current_user
+    solicitud.fecha_cambio_prioridad = datetime.utcnow()
+    db.session.commit()
+
+    flash(f"Prioridad actualizada a «{nueva}».", "success")
+    return volver

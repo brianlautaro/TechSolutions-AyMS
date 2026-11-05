@@ -20,12 +20,29 @@ ESTADO_REALIZADO = "realizado"
 MAX_INTENTOS = 5        # HU-02: cinco intentos fallidos
 MINUTOS_BLOQUEO = 15    # HU-02: bloqueo de 15 minutos
 
+PRIORIDAD_ALTA = "alta"
+PRIORIDAD_MEDIA = "media"
+PRIORIDAD_BAJA = "baja"
+PRIORIDADES = [PRIORIDAD_ALTA, PRIORIDAD_MEDIA, PRIORIDAD_BAJA]
+
 
 class Plan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)  # Básico, Profesional, Premium
     tiempo_respuesta_horas = db.Column(db.Integer)
     activo = db.Column(db.Boolean, default=True)
+    
+    @property
+    def prioridad_sugerida(self):
+        """HU-12: menos horas de respuesta = más prioridad (Premium 24h, Profesional 48h, Básico 72h)."""
+        horas = self.tiempo_respuesta_horas
+        if horas is None:
+            return None
+        if horas <= 24:
+            return PRIORIDAD_ALTA
+        if horas <= 48:
+            return PRIORIDAD_MEDIA
+        return PRIORIDAD_BAJA
 
 
 class Usuario(UserMixin, db.Model):
@@ -88,8 +105,16 @@ class Solicitud(db.Model):
     fecha_ingreso = db.Column(db.DateTime, default=datetime.utcnow)
     fecha_resolucion = db.Column(db.DateTime)
     motivo_rechazo = db.Column(db.String(300))
-    usuario = db.relationship("Usuario", backref="solicitudes")
+    prioridad_modificada_por_id = db.Column(db.Integer, db.ForeignKey("usuario.id"))  # HU-12
+    fecha_cambio_prioridad = db.Column(db.DateTime)                                   # HU-12
+    usuario = db.relationship("Usuario", foreign_keys=[usuario_id], backref="solicitudes")
+    prioridad_modificada_por = db.relationship("Usuario", foreign_keys=[prioridad_modificada_por_id])
     servicio = db.relationship("Servicio")
+    
+    @property
+    def admite_cambio_prioridad(self):
+        """HU-12: no se cambia la prioridad de solicitudes finalizadas o rechazadas."""
+        return self.estado not in (ESTADO_REALIZADO, ESTADO_RECHAZADA)
 
 
 

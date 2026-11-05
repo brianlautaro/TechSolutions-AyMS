@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Solicitud #{{ solicitud.id }} · Tech Solutions{% endblock %}
+
+{% block content %}
+{% set plan = solicitud.usuario.plan %}
+{% set sugerida = plan.prioridad_sugerida if plan else None %}
+
+<section class="detalle-solicitud">
+    <p><a href="{{ url_for('admin_dashboard') }}">← Volver al panel</a></p>
+    <h1>Solicitud #{{ solicitud.id }}</h1>
+
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+        {% for categoria, mensaje in mensajes %}
+            <p class="msg msg-{{ categoria }}">{{ mensaje }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    <dl class="datos">
+        <dt>Cliente</dt>
+        <dd>{{ solicitud.usuario.nombre }} {{ solicitud.usuario.apellido or '' }} ({{ solicitud.usuario.email }})</dd>
+
+        <dt>Plan</dt>
+        <dd>
+            {% if plan %}{{ plan.nombre }} · respuesta en {{ plan.tiempo_respuesta_horas }} h
+            {% else %}Sin plan{% endif %}
+        </dd>
+
+        <dt>Servicio</dt>
+        <dd>{{ solicitud.servicio.nombre }}</dd>
+
+        <dt>Tipo de modificación</dt>
+        <dd>{{ solicitud.tipo_modificacion }}</dd>
+
+        <dt>Descripción</dt>
+        <dd>{{ solicitud.descripcion or '—' }}</dd>
+
+        <dt>Estado</dt>
+        <dd>{{ solicitud.estado }}</dd>
+
+        <dt>Ingresó</dt>
+        <dd>{{ solicitud.fecha_ingreso.strftime('%d/%m/%Y %H:%M') }}</dd>
+    </dl>
+
+    <h2>Prioridad</h2>
+    <dl class="datos">
+        <dt>Actual</dt>
+        <dd>{{ solicitud.prioridad or 'Sin asignar' }}</dd>
+
+        <dt>Sugerida por el plan</dt>
+        <dd>{{ sugerida or 'Sin sugerencia (el cliente no tiene plan)' }}</dd>
+
+        {% if solicitud.fecha_cambio_prioridad %}
+        <dt>Último cambio</dt>
+        <dd>
+            {{ solicitud.fecha_cambio_prioridad.strftime('%d/%m/%Y %H:%M') }}
+            por {{ solicitud.prioridad_modificada_por.nombre }}
+        </dd>
+        {% endif %}
+    </dl>
+
+        {% if solicitud.admite_cambio_prioridad %}
+    <form class="form-prioridad" method="post"
+          action="{{ url_for('solicitudes_admin.cambiar_prioridad', solicitud_id=solicitud.id) }}"
+          onsubmit="return confirm('¿Confirmás el cambio de prioridad?');">
+        <label for="prioridad">Nueva prioridad</label>
+        <select id="prioridad" name="prioridad">
+            {% for p in prioridades %}
+            <option value="{{ p }}" {% if p == (solicitud.prioridad or sugerida) %}selected{% endif %}>
+                {{ p }}{% if p == sugerida %} (sugerida){% endif %}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn-primary">Guardar prioridad</button>
+    </form>
+    {% else %}
+    <p class="msg msg-error">La solicitud está {{ solicitud.estado }}: su prioridad ya no se puede modificar.</p>
+    {% endif %}
+</section>
+
+<style>
+    .detalle-solicitud { display: flex; flex-direction: column; gap: 1rem; max-width: 640px; }
+    .datos { display: grid; grid-template-columns: max-content 1fr; gap: .4rem 1.2rem; margin: 0; }
+    .datos dt { font-weight: 600; }
+    .datos dd { margin: 0; }
+    .msg { padding: .7rem; border-radius: 8px; margin: 0; }
+    .msg-error { background: #fde8e8; color: #9b1c1c; }
+    .msg-success { background: #e6f6ea; color: #1e6b34; }
+    .form-prioridad { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+</style>
+{% endblock %}
