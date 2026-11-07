@@ -8,6 +8,9 @@
     <p>Bienvenido a tu panel de Tech Solutions.</p>
 
     <!-- HU-06: acá va la lista de "Mis servicios" -->
-    <!-- HU-08: acá va el acceso a "Registrar solicitud" -->
+  <!-- HU-08: acceso a "Registrar solicitud" -->
+{% if not is_admin %}
+<p><a href="{{ url_for('solicitudes_cliente.nueva') }}" class="btn-primary">Solicitar una modificación</a></p>
+{% endif %}<!-- HU-08: acá va el acceso a "Registrar solicitud" -->
 </section>
 {% endblock %}

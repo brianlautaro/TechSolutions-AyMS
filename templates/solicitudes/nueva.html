@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva solicitud · Tech Solutions{% endblock %}
+
+{% block content %}
+<div class="main-content solicitud-form-box">
+    <h1 class="section-title">Solicitar una modificación</h1>
+
+    {% if not servicios %}
+    {# Sin servicios activos no se puede abrir una solicitud (precondición del CU-01) #}
+    <div class="empty-state">
+        <p>No tenés servicios activos sobre los que pedir una modificación.</p>
+        <a href="{{ url_for('mis_servicios') }}" class="btn-primary">Ver mis servicios</a>
+    </div>
+    {% else %}
+
+    <p class="creditos {% if creditos <= 0 %}creditos-agotados{% endif %}">
+        Créditos disponibles este mes: <strong>{{ creditos }}</strong>
+        {% if current_user.plan %}(plan {{ current_user.plan.nombre }}){% endif %}
+    </p>
+
+    {% if errores.general %}
+    <p class="msg msg-error" role="alert">{{ errores.general }}</p>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('solicitudes_cliente.nueva') }}" novalidate>
+        <div class="campo {% if errores.servicio_id %}campo-error{% endif %}">
+            <label for="servicio_id">Servicio</label>
+            <select id="servicio_id" name="servicio_id">
+                <option value="">Elegí un servicio…</option>
+                {% for c in servicios %}
+                <option value="{{ c.servicio_id }}" {% if datos.servicio_id == c.servicio_id %}selected{% endif %}>
+                    {{ c.servicio.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+            {% if errores.servicio_id %}<small class="error-texto">{{ errores.servicio_id }}</small>{% endif %}
+        </div>
+
+        <div class="campo {% if errores.tipo_modificacion %}campo-error{% endif %}">
+            <label for="tipo_modificacion">Tipo de modificación</label>
+            <select id="tipo_modificacion" name="tipo_modificacion">
+                <option value="">Elegí un tipo…</option>
+                {% for t in tipos %}
+                <option value="{{ t }}" {% if datos.tipo_modificacion == t %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+            {% if errores.tipo_modificacion %}<small class="error-texto">{{ errores.tipo_modificacion }}</small>{% endif %}
+        </div>
+
+        <div class="campo {% if errores.descripcion %}campo-error{% endif %}">
+            <label for="descripcion">Descripción</label>
+            <textarea id="descripcion" name="descripcion" rows="5" maxlength="{{ max_descripcion }}"
+                placeholder="Contanos qué necesitás modificar y por qué."
+                {% if errores.descripcion %}autofocus aria-invalid="true"{% endif %}>{{ datos.descripcion }}</textarea>
+            {% if errores.descripcion %}<small class="error-texto">{{ errores.descripcion }}</small>{% endif %}
+        </div>
+
+        <div class="acciones">
+            <button type="submit" class="btn-primary">Confirmar solicitud</button>
+            <a href="{{ url_for('mis_servicios') }}" class="btn-secondary">Cancelar</a>
+        </div>
+    </form>
+    {% endif %}
+</div>
+
+<style>
+    .solicitud-form-box { max-width: 640px; }
+    .solicitud-form-box form { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
+    .campo { display: flex; flex-direction: column; gap: .35rem; }
+    .campo label { font-weight: 600; }
+    .campo select, .campo textarea {
+        padding: .7rem; font: inherit; border-radius: 8px;
+        border: 1px solid var(--border); background: var(--white); color: var(--text);
+    }
+    .campo textarea { resize: vertical; }
+    .campo-error select, .campo-error textarea { border: 2px solid #dc2626; background: #fef2f2; }
+    .error-texto { color: #b91c1c; font-weight: 500; }
+    .creditos { color: var(--text-muted); margin-top: .5rem; }
+    .creditos-agotados strong { color: #b91c1c; }
+    .msg { padding: .7rem 1rem; border-radius: 8px; margin: 1rem 0 0; }
+    .msg-error { background: #fde8e8; color: #9b1c1c; }
+    .acciones { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
+</style>
+{% endblock %}
