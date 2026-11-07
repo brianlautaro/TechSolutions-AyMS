@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Solicitud registrada · Tech Solutions{% endblock %}
+
+{% block content %}
+<div class="main-content confirmacion-box">
+    <h1 class="section-title">¡Solicitud registrada!</h1>
+    <p class="msg msg-success">Tu pedido quedó en estado <strong>pendiente</strong> y ya avisamos al administrador.</p>
+
+    <dl class="resumen">
+        <dt>Número</dt>
+        <dd>#{{ solicitud.id }}</dd>
+        <dt>Servicio</dt>
+        <dd>{{ solicitud.servicio.nombre }}</dd>
+        <dt>Tipo de modificación</dt>
+        <dd>{{ solicitud.tipo_modificacion }}</dd>
+        <dt>Descripción</dt>
+        <dd>{{ solicitud.descripcion }}</dd>
+        <dt>Estado</dt>
+        <dd><span class="estado-badge">Pendiente</span></dd>
+        <dt>Fecha de ingreso</dt>
+        <dd>{{ solicitud.fecha_ingreso.strftime('%d/%m/%Y %H:%M') }}</dd>
+    </dl>
+
+    <p class="creditos">Te quedan <strong>{{ creditos }}</strong> créditos este mes.</p>
+
+    <div class="acciones">
+        <a href="{{ url_for('solicitudes_cliente.nueva') }}" class="btn-primary">Nueva solicitud</a>
+        <a href="{{ url_for('mis_servicios') }}" class="btn-secondary">Volver a mis servicios</a>
+    </div>
+</div>
+
+<style>
+    .confirmacion-box { max-width: 640px; display: flex; flex-direction: column; gap: 1rem; }
+    .msg { padding: .7rem 1rem; border-radius: 8px; margin: 0; }
+    .msg-success { background: #def7ec; color: #03543f; }
+    .resumen { display: grid; grid-template-columns: max-content 1fr; gap: .5rem 1rem; }
+    .resumen dt { font-weight: 600; }
+    .resumen dd { margin: 0; overflow-wrap: anywhere; }
+    .creditos { color: var(--text-muted); }
+    .resumen .estado-badge { background: #fef3c7; color: #92400e; }
+    .acciones { display: flex; gap: .75rem; flex-wrap: wrap; }
+</style>
+{% endblock %}
