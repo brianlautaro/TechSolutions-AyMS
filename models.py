@@ -27,6 +27,26 @@ PRIORIDAD_BAJA = "baja"
 PRIORIDADES = [PRIORIDAD_ALTA, PRIORIDAD_MEDIA, PRIORIDAD_BAJA]
 
 
+# HU-08: tipos de modificación que el cliente puede elegir en el formulario.
+TIPOS_MODIFICACION = [
+    "Cambio de horario",
+    "Ampliación del alcance",
+    "Reducción del alcance",
+    "Cambio de responsable",
+    "Otro",
+]
+
+# HU-08: solicitudes de modificación que incluye cada plan por mes.
+CREDITOS_POR_PLAN = {
+    "Básico": 2,
+    "Profesional": 5,
+    "Premium": 10,
+}
+
+# Gestión de notificaciones (diccionario de datos: Evento_notificacion)
+EVENTO_NUEVA_SOLICITUD = "nueva_solicitud"
+CANAL_EMAIL = "email"
+
 class Plan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)  # Básico, Profesional, Premium
@@ -44,6 +64,12 @@ class Plan(db.Model):
         if horas <= 48:
             return PRIORIDAD_MEDIA
         return PRIORIDAD_BAJA
+
+    
+    @property
+    def creditos_mensuales(self):
+        """HU-08: cuántas solicitudes de modificación incluye el plan por mes."""
+        return CREDITOS_POR_PLAN.get(self.nombre, 0)
 
 
 class Usuario(UserMixin, db.Model):
@@ -75,7 +101,36 @@ class Usuario(UserMixin, db.Model):
     @property
     def esta_bloqueado(self):
         return self.bloqueado_hasta is not None and self.bloqueado_hasta > datetime.utcnow()
+    
+    @property
+    def servicios_activos(self):
+        """HU-08: servicios contratados sobre los que se pueden abrir solicitudes."""
+        return [
+            c for c in self.servicios_contratados
+            if c.activo and c.servicio.activo
+        ]
 
+    @property
+    def creditos_usados(self):
+        """HU-08: solicitudes del mes en curso. Las rechazadas devuelven el crédito."""
+        hoy = datetime.utcnow()
+        inicio_mes = datetime(hoy.year, hoy.month, 1)
+        return (
+            Solicitud.query
+            .filter(
+                Solicitud.usuario_id == self.id,
+                Solicitud.fecha_ingreso >= inicio_mes,
+                Solicitud.estado != ESTADO_RECHAZADA,
+            )
+            .count()
+        )
+
+    @property
+    def creditos_restantes(self):
+        """HU-08: saldo del mes. Sin plan, no hay créditos."""
+        if not self.plan:
+            return 0
+        return max(0, self.plan.creditos_mensuales - self.creditos_usados)
 
 class Servicio(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -118,6 +173,22 @@ class Solicitud(db.Model):
         return self.estado not in (ESTADO_REALIZADO, ESTADO_RECHAZADA)
 
 
+
+class Notificacion(db.Model):
+    """Registro de notificaciones (diccionario de datos: Registro_notificacion).
+    HU-08 lo usa para avisar al administrador de una nueva solicitud (simula NotiSys)."""
+    id = db.Column(db.Integer, primary_key=True)
+    destinatario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
+    cliente_id = db.Column(db.Integer, db.ForeignKey("usuario.id"))
+    solicitud_id = db.Column(db.Integer, db.ForeignKey("solicitud.id"))
+    tipo_evento = db.Column(db.String(40), nullable=False)
+    mensaje = db.Column(db.String(300), nullable=False)
+    canal = db.Column(db.String(20), default=CANAL_EMAIL, nullable=False)
+    fecha_envio = db.Column(db.DateTime, default=datetime.utcnow)
+    leida = db.Column(db.Boolean, default=False)
+    destinatario = db.relationship("Usuario", foreign_keys=[destinatario_id])
+    cliente = db.relationship("Usuario", foreign_keys=[cliente_id])
+    solicitud = db.relationship("Solicitud")
 
 class TokenAPI(db.Model):
     """HU-21: token de acceso para un sistema externo (lo usa la API de HU-22).
