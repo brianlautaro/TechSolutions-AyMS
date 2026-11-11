@@ -271,3 +271,23 @@ class TokenAPI(db.Model):
         self.consultas_en_ventana += 1
         self.ultimo_uso = ahora
         return True
+
+
+# =====================================================================
+# MODELOS POR PERSONA (Bloques 2 y 3)
+# Cada uno agrega sus constantes, imports y clases SOLO dentro de su
+# seccion (un import nuevo va dentro de la seccion, no arriba del archivo).
+# Si necesitas una columna nueva en un modelo que ya existe (Usuario,
+# Solicitud, Plan...), avisa en el grupo: todos tienen que borrar
+# instance\techsolutions.db.
+# =====================================================================
+
+# --- Valentina ---
+
+# --- Franco ---
+
+# --- Abril ---
+
+# --- Brian ---
+
+# --- Aristides ---

@@ -11,6 +11,17 @@ from solicitudes.cliente_routes import solicitudes_cliente_bp
 from auth.routes import auth_bp, oauth
 from models import ESTADO_PENDIENTE, ESTADOS, PRIORIDADES, ServicioContratado, Solicitud, Usuario, db
 
+# --- Imports por persona: cada uno agrega los suyos solo en su seccion ---
+# --- Valentina ---
+
+# --- Franco ---
+
+# --- Abril ---
+
+# --- Brian ---
+
+# --- Aristides ---
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -45,6 +56,18 @@ app.register_blueprint(integraciones_admin_bp)
 app.register_blueprint(api_bp)
 app.register_blueprint(reportes_admin_bp)
 app.register_blueprint(solicitudes_cliente_bp)
+
+# --- Blueprints por persona: cada uno registra los suyos solo en su seccion ---
+# --- Valentina ---
+
+# --- Franco ---
+
+# --- Abril ---
+
+# --- Brian ---
+
+# --- Aristides ---
+
 
 @login_manager.user_loader
 def load_user(user_id):
