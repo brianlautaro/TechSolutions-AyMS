@@ -115,6 +115,19 @@ def run_seed():
         ),
     ])
 
+    # --- Datos de prueba por persona: cada uno agrega los suyos solo en su seccion ---
+    # (Los imports nuevos van dentro de la seccion. Ya existen: planes, servicios,
+    #  admin, mariana, gustavo, carla, lucas.)
+    # --- Valentina ---
+
+    # --- Franco ---
+
+    # --- Abril ---
+
+    # --- Brian ---
+
+    # --- Aristides ---
+
     db.session.commit()
     print("Datos de prueba listos.")
 

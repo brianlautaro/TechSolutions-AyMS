@@ -31,6 +31,21 @@ git push -u origin feature/HU-08-registrar-solicitud
 
 Después se abre el pull request hacia `develop`, con el link a la tarjeta de Trello y los criterios de aceptación probados.
 
+## Archivos compartidos: una sección por persona
+
+Para no pisarnos al hacer merge, estos archivos tienen una sección marcada con el nombre de
+cada integrante. **Cada uno agrega sus líneas solo dentro de su sección**:
+
+- `app.py`: imports y registro de blueprints.
+- `models.py`: constantes y modelos nuevos, al final del archivo.
+- `seed.py`: datos de prueba, dentro de `run_seed()`.
+- `templates/panel.html`: accesos del cliente.
+- `templates/admin/dashboard.html`: accesos de administración.
+
+Reglas: no tocar `templates/base.html`; el código nuevo va en su propia carpeta y blueprint;
+si cambiás una columna de un modelo que ya existe, avisá al grupo (todos borran
+`instance\techsolutions.db`); antes del PR, `git merge origin/develop`.
+
 ## Bloques
 
 | Bloque | Historias |
