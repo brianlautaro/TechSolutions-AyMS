@@ -128,6 +128,63 @@ def run_seed():
 
     # --- Aristides ---
 
+        # Más clientes, para probar bandeja, filtros, reportes y planes
+    from models import ESTADO_RECHAZADA
+
+    extra = [
+        ("Sofía", "Ramos", "sofia@ejemplo.com", "Premium"),
+        ("Tomás", "Peralta", "tomas@ejemplo.com", "Profesional"),
+        ("Julieta", "Navarro", "julieta@ejemplo.com", "Básico"),
+        ("Martín", "Suárez", "martin@ejemplo.com", "Profesional"),
+    ]
+    clientes_extra = []
+    for nombre, apellido, email, plan in extra:
+        u = Usuario(nombre=nombre, apellido=apellido, email=email,
+                    telefono="+54 911 3333 4444", rol=ROL_CLIENTE, plan=planes[plan])
+        u.set_password(DEMO_PASSWORD)
+        db.session.add(u)
+        clientes_extra.append(u)
+    sofia, tomas, julieta, martin = clientes_extra
+
+    db.session.add_all([
+        ServicioContratado(usuario=sofia, servicio=servicios[2]),
+        ServicioContratado(usuario=sofia, servicio=servicios[5]),
+        ServicioContratado(usuario=tomas, servicio=servicios[4]),
+        ServicioContratado(usuario=tomas, servicio=servicios[6]),
+        ServicioContratado(usuario=julieta, servicio=servicios[7]),
+        ServicioContratado(usuario=martin, servicio=servicios[0]),
+        ServicioContratado(usuario=martin, servicio=servicios[1]),
+    ])
+
+    # Solicitudes en todos los estados y prioridades, con fechas distintas
+    db.session.add_all([
+        Solicitud(usuario=sofia, servicio=servicios[2], tipo_modificacion="Cambio de horario",
+                  descripcion="Mover las entrevistas a la tarde.", estado=ESTADO_PENDIENTE,
+                  prioridad="alta", fecha_ingreso=ahora - timedelta(hours=3)),
+        Solicitud(usuario=sofia, servicio=servicios[5], tipo_modificacion="Ampliación del alcance",
+                  descripcion="Sumar un modelo de predicción de ventas.", estado=ESTADO_EN_CURSO,
+                  prioridad="media", fecha_ingreso=ahora - timedelta(days=2)),
+        Solicitud(usuario=tomas, servicio=servicios[4], tipo_modificacion="Cambio de plan",
+                  descripcion="Pasar al plan Premium.", estado=ESTADO_RECHAZADA,
+                  prioridad="baja", fecha_ingreso=ahora - timedelta(days=4),
+                  fecha_resolucion=ahora - timedelta(days=3),
+                  motivo_rechazo="El cambio de plan se gestiona por administración."),
+        Solicitud(usuario=tomas, servicio=servicios[6], tipo_modificacion="Cambio de horario",
+                  descripcion="Capacitación los viernes.", estado=ESTADO_REALIZADO,
+                  prioridad="media", fecha_ingreso=ahora - timedelta(days=9),
+                  fecha_resolucion=ahora - timedelta(days=6)),
+        Solicitud(usuario=julieta, servicio=servicios[7], tipo_modificacion="Ampliación del alcance",
+                  descripcion="Incluir normativa de protección de datos.", estado=ESTADO_PENDIENTE,
+                  prioridad="media", fecha_ingreso=ahora - timedelta(days=1)),
+        Solicitud(usuario=martin, servicio=servicios[0], tipo_modificacion="Cambio de horario",
+                  descripcion="Reunión mensual a primera hora.", estado=ESTADO_PENDIENTE,
+                  prioridad="baja", fecha_ingreso=ahora - timedelta(days=5)),
+        Solicitud(usuario=martin, servicio=servicios[1], tipo_modificacion="Ampliación del alcance",
+                  descripcion="Agregar campaña en LinkedIn.", estado=ESTADO_REALIZADO,
+                  prioridad="alta", fecha_ingreso=ahora - timedelta(days=12),
+                  fecha_resolucion=ahora - timedelta(days=10)),
+    ])
+
     db.session.commit()
     print("Datos de prueba listos.")
 
