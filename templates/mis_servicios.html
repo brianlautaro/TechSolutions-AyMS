@@ -18,7 +18,7 @@
             <div class="servicio-estado">
                 {% if activo %}
                 <span class="estado-badge estado-activo">Activo</span>
-                <!-- HU-08: Botón "Solicitar modificación" (solo para servicios activos) -->
+                 <a href="{{ url_for('solicitudes_cliente.nueva', servicio_id=c.servicio_id) }}" class="btn-primary">Solicitar modificación</a>
                 {% else %}
                 <span class="estado-badge estado-inactivo">Inactivo</span>
                 <small>No se pueden abrir solicitudes sobre este servicio.</small>
