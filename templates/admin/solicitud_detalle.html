@@ -6,8 +6,10 @@
 {% set plan = solicitud.usuario.plan %}
 {% set sugerida = plan.prioridad_sugerida if plan else None %}
 
-<section class="detalle-solicitud">
-    <p><a href="{{ url_for('admin_dashboard') }}">← Volver al panel</a></p>
+<section class="detalle-solicitud vista vista-angosta">
+    <a href="{{ url_for('admin_dashboard') }}" class="vista-volver">← Volver al panel</a>
+
+  <div class="vista-card">
     <h1>Solicitud #{{ solicitud.id }}</h1>
 
     {% with mensajes = get_flashed_messages(with_categories=true) %}
@@ -36,7 +38,7 @@
         <dd>{{ solicitud.descripcion or '—' }}</dd>
 
         <dt>Estado</dt>
-        <dd>{{ solicitud.estado }}</dd>
+        <dd>{{ solicitud.estado|replace('_', ' ')|capitalize }}</dd>
 
         <dt>Ingresó</dt>
         <dd>{{ solicitud.fecha_ingreso.strftime('%d/%m/%Y %H:%M') }}</dd>
@@ -49,14 +51,16 @@
         <dd>{{ solicitud.fecha_resolucion.strftime('%d/%m/%Y %H:%M') }}</dd>
         {% endif %}
     </dl>
+  </div>
 
+  <div class="vista-card">
     <h2>Prioridad</h2>
     <dl class="datos">
         <dt>Actual</dt>
-        <dd>{{ solicitud.prioridad or 'Sin asignar' }}</dd>
+        <dd>{{ (solicitud.prioridad or 'Sin asignar')|capitalize }}</dd>
 
         <dt>Sugerida por el plan</dt>
-        <dd>{{ sugerida or 'Sin sugerencia (el cliente no tiene plan)' }}</dd>
+        <dd>{{ (sugerida or 'Sin sugerencia (el cliente no tiene plan)')|capitalize }}</dd>
 
         {% if solicitud.fecha_cambio_prioridad %}
         <dt>Último cambio</dt>
@@ -82,32 +86,32 @@
         <button type="submit" class="btn-primary">Guardar prioridad</button>
     </form>
     {% else %}
-    <p class="msg msg-error">La solicitud está {{ solicitud.estado }}: su prioridad ya no se puede modificar.</p>
+    <p class="msg msg-error">La solicitud está {{ solicitud.estado|replace('_', ' ') }}: su prioridad ya no se puede modificar.</p>
     {% endif %}
+  </div>
+
+  <div class="vista-card">
     <h2>Acciones</h2>
 {% if solicitud.estado == 'pendiente' %}
-<form method="post" action="{{ url_for('solicitudes_admin.aprobar', solicitud_id=solicitud.id) }}">
+<form class="form-acciones" method="post" action="{{ url_for('solicitudes_admin.aprobar', solicitud_id=solicitud.id) }}">
     <button type="submit" class="btn-primary">Aprobar</button>
 </form>
-<form method="post" action="{{ url_for('solicitudes_admin.rechazar', solicitud_id=solicitud.id) }}">
+<form class="form-acciones" method="post" action="{{ url_for('solicitudes_admin.rechazar', solicitud_id=solicitud.id) }}">
     <input type="text" name="motivo" maxlength="300" required placeholder="Motivo del rechazo">
-    <button type="submit">Rechazar</button>
+    <button type="submit" class="btn-peligro">Rechazar</button>
 </form>
 {% elif solicitud.estado == 'en_curso' %}
-<form method="post" action="{{ url_for('solicitudes_admin.finalizar', solicitud_id=solicitud.id) }}"
+<form class="form-acciones" method="post" action="{{ url_for('solicitudes_admin.finalizar', solicitud_id=solicitud.id) }}"
       onsubmit="return confirm('¿Marcar la solicitud como realizada?');">
     <button type="submit" class="btn-primary">Finalizar</button>
 </form>
 {% else %}
-<p class="msg msg-info">La solicitud está {{ solicitud.estado }}: no admite más acciones.</p>
+<p class="msg msg-info">La solicitud está {{ solicitud.estado|replace('_', ' ') }}: no admite más acciones.</p>
 {% endif %}
+  </div>
 </section>
 
 <style>
-    .detalle-solicitud { display: flex; flex-direction: column; gap: 1rem; max-width: 640px; }
-    .datos { display: grid; grid-template-columns: max-content 1fr; gap: .4rem 1.2rem; margin: 0; }
-    .datos dt { font-weight: 600; }
-    .datos dd { margin: 0; }
     .msg { padding: .7rem; border-radius: 8px; margin: 0; }
     .msg-error { background: #fde8e8; color: #9b1c1c; }
     .msg-success { background: #e6f6ea; color: #1e6b34; }
