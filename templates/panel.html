@@ -3,15 +3,18 @@
 {% block title %}Mi panel · Tech Solutions{% endblock %}
 
 {% block content %}
-<section>
+<section class="vista vista-angosta">
+  <div class="vista-card vista-card-centrada">
     <h1>Hola, {{ current_user.nombre }}</h1>
     <p>Bienvenido a tu panel de Tech Solutions.</p>
+
+    <div class="vista-acciones">
 
     {# Accesos del cliente. Cada persona agrega los suyos solo en su seccion. #}
     {% if not is_admin %}
 
     {# --- HU-08 (Abril): registrar solicitud --- #}
-    <p><a href="{{ url_for('solicitudes_cliente.nueva') }}" class="btn-primary">Solicitar una modificación</a></p>
+    <a href="{{ url_for('solicitudes_cliente.nueva') }}" class="btn-primary">Solicitar una modificación</a>
 
     {# --- Valentina --- #}
 
@@ -24,5 +27,7 @@
     {# --- Aristides --- #}
 
     {% endif %}
+    </div>
+  </div>
 </section>
 {% endblock %}

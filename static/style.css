@@ -2125,3 +2125,122 @@ body {
   .recommended-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+
+/* ================================ */
+/*  VISTAS INTERNAS (Aristides)     */
+/*  panel cliente, bandeja admin y  */
+/*  detalle de solicitud            */
+/* ================================ */
+.vista {
+  width: 90%;
+  max-width: 960px;
+  margin: 3rem auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.vista-angosta { max-width: 640px; }
+.vista-centrada { text-align: center; align-items: center; }
+
+.vista-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  padding: 1.75rem 2rem;
+}
+.vista-card h1 { font-size: 1.7rem; font-weight: 800; color: var(--navy); margin-bottom: 0.4rem; }
+.vista-card h2 { font-size: 1.05rem; font-weight: 700; color: var(--navy); margin-bottom: 1rem; }
+.vista-card p { color: var(--text-muted); margin: 0; }
+.vista-card-centrada { text-align: center; padding: 2.5rem 2rem; }
+.vista-card-centrada .vista-acciones { justify-content: center; margin-top: 1.5rem; }
+
+.vista-acciones { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.vista-volver {
+  color: var(--sky);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  align-self: flex-start;
+}
+.vista-volver:hover { text-decoration: underline; }
+
+/* Enlaces de acceso rápido del admin (Integraciones, Reportes, ...) */
+.vista-links { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.25rem; }
+.vista-links a {
+  background: var(--sky-pale);
+  color: var(--sky);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 1.1rem;
+  font-weight: 600;
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+.vista-links a:hover { background: var(--sky); color: var(--white); }
+
+/* Formularios dentro de las cards */
+.vista-card form { margin: 0; }
+.vista-card label { font-size: 0.82rem; font-weight: 600; color: var(--navy); }
+.vista-card select,
+.vista-card input[type="text"],
+.vista-card input[type="date"] {
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+  font-size: 0.92rem;
+  color: var(--text);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.vista-card select:focus,
+.vista-card input:focus { outline: 2px solid var(--sky); outline-offset: 1px; }
+
+.btn-secundario,
+.btn-peligro {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1.6rem;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+.btn-peligro { background: #fde8e8; color: #9b1c1c; border: 1px solid #f5c2c2; }
+.btn-peligro:hover { background: #9b1c1c; color: var(--white); }
+
+/* Datos clave / valor (detalle de solicitud) */
+.vista-card .datos { display: grid; grid-template-columns: max-content 1fr; gap: 0.6rem 1.5rem; margin: 0; }
+.vista-card .datos dt { font-weight: 600; color: var(--text-muted); font-size: 0.88rem; }
+.vista-card .datos dd { margin: 0; color: var(--text); }
+.vista-card .form-prioridad { margin-top: 1.25rem; }
+.vista-card .form-acciones { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; }
+.vista-card .form-acciones + .form-acciones { margin-top: 0.9rem; }
+.vista-card .form-acciones input[type="text"] { flex: 1 1 220px; }
+.vista-card .msg { margin-top: 1rem; }
+.vista-card p.msg-error { color: #9b1c1c; }
+.vista-card p.msg-success { color: #1e6b34; }
+.vista-card p.msg-info { color: #1c3f9b; }
+
+.vista-card .filtros { margin: 0; }
+.vista-card h1 + .datos { margin-top: 1.1rem; }
+.vista-card .datos { align-items: baseline; }
+.vista-card .filtros a,
+.vista .admin-table a {
+  color: var(--sky);
+  font-weight: 600;
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+.vista-card .filtros a:hover,
+.vista .admin-table a:hover { text-decoration: underline; }
+.vista .admin-table-section { margin-bottom: 0; }
+.vista .admin-table-section { overflow-x: auto; }
+
+@media (max-width: 640px) {
+  .vista { margin: 2rem auto; }
+  .vista-card { padding: 1.25rem 1.1rem; }
+  .vista-card .datos { grid-template-columns: 1fr; gap: 0.1rem; }
+  .vista-card .datos dd { margin-bottom: 0.7rem; }
+  .vista .admin-table { min-width: 560px; }
+}

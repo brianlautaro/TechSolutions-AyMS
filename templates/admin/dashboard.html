@@ -8,11 +8,13 @@
 } %}
 
 {% block content %}
-<section class="bandeja">
+<section class="bandeja vista">
+  <div class="vista-card">
     <h1>Panel de administración</h1>
     <p>Hola, {{ current_user.nombre }}.</p>
-    <p><a href="{{ url_for('integraciones_admin.listar') }}">Integraciones (tokens de API)</a></p>
-    <p><a href="{{ url_for('reportes_admin.generar') }}">Reportes</a></p>
+    <div class="vista-links">
+    <a href="{{ url_for('integraciones_admin.listar') }}">Integraciones (tokens de API)</a>
+    <a href="{{ url_for('reportes_admin.generar') }}">Reportes</a>
 
     {# Accesos de administración. Cada persona agrega los suyos solo en su sección. #}
 
@@ -25,6 +27,8 @@
     {# --- Brian --- #}
 
     {# --- Aristides --- #}
+    </div>
+  </div>
 
     {% with mensajes = get_flashed_messages(with_categories=true) %}
         {% for categoria, mensaje in mensajes %}
@@ -32,6 +36,7 @@
         {% endfor %}
     {% endwith %}
 
+  <div class="vista-card">
     <h2>Bandeja de solicitudes</h2>
 
     <!-- Filtros: method="get" hace que viajen en la URL (/admin?estado=...&prioridad=...) -->
@@ -61,6 +66,7 @@
         <button type="submit" class="btn-primary">Filtrar</button>
         <a href="{{ url_for('admin_dashboard') }}">Limpiar</a>
     </form>
+  </div>
 
     {% if not hay_pendientes %}
     <p class="msg msg-info">No hay solicitudes pendientes por atender. 🎉</p>
@@ -101,7 +107,6 @@
 </section>
 
 <style>
-    .bandeja { display: flex; flex-direction: column; gap: 1rem; }
     .filtros { display: flex; flex-wrap: wrap; gap: .8rem; align-items: flex-end; }
     .filtros label { display: flex; flex-direction: column; gap: .25rem; font-size: .85rem; font-weight: 600; }
     .filtros select, .filtros input { padding: .5rem; font: inherit; border-radius: 8px; }
