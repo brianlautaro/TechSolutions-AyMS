@@ -24,6 +24,7 @@
             <th>Prioridad</th>
             <th>Ingreso</th>
             <th>Resolución</th>
+            <th>Documentación</th>
           </tr>
         </thead>
         <tbody>
@@ -48,6 +49,9 @@
               {% else %}
                 —
               {% endif %}
+              </td>
+            <td><a href="{{ url_for('adjuntos.ver', solicitud_id=s.id) }}">Ver / adjuntar</a></td>
+          </tr>
             </td>
           </tr>
           {% endfor %}
