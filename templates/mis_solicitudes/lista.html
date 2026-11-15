@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Mis solicitudes · Tech Solutions{% endblock %}
+
+{% block content %}
+{% set NOMBRE_ESTADO = {
+    'pendiente': 'Pendiente', 'en_curso': 'En curso',
+    'rechazada': 'Rechazada', 'realizado': 'Realizado'
+} %}
+
+<section class="vista">
+  <div class="vista-card">
+    <h1>Mis solicitudes</h1>
+
+    {% if filas %}
+    <div class="ms-scroll">
+      <table class="ms-tabla">
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>Servicio</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th>Prioridad</th>
+            <th>Ingreso</th>
+            <th>Resolución</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in filas %}
+          {% set s = f.solicitud %}
+          <tr>
+            <td>#{{ s.id }}</td>
+            <td>{{ s.servicio.nombre }}</td>
+            <td>{{ s.tipo_modificacion }}</td>
+            <td><span class="ms-estado ms-{{ s.estado }}">{{ NOMBRE_ESTADO.get(s.estado, s.estado) }}</span></td>
+            <td>{{ s.prioridad|capitalize if s.prioridad else 'Sin asignar' }}</td>
+            <td>{{ s.fecha_ingreso.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td>
+              {% if f.cerrada %}
+                {% if s.fecha_resolucion %}
+                  Cierre: {{ s.fecha_resolucion.strftime('%d/%m/%Y %H:%M') }}
+                {% else %}
+                  Sin fecha de cierre
+                {% endif %}
+              {% elif f.estimada %}
+                Estimada: {{ f.estimada.strftime('%d/%m/%Y %H:%M') }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <p>Todavía no tenés solicitudes registradas.</p>
+      <a href="{{ url_for('solicitudes_cliente.nueva') }}" class="btn-primary">Solicitar una modificación</a>
+    </div>
+    {% endif %}
+
+    <div class="vista-acciones">
+      <a href="{{ url_for('panel') }}" class="btn-secondary">Volver a mi panel</a>
+    </div>
+  </div>
+</section>
+
+<style>
+    .ms-scroll { overflow-x: auto; margin: 1rem 0; }
+    .ms-tabla { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    .ms-tabla th { text-align: left; padding: .6rem .75rem; border-bottom: 2px solid #e5e7eb; color: var(--navy); }
+    .ms-tabla td { padding: .6rem .75rem; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+    .ms-estado { padding: .2rem .7rem; border-radius: 999px; font-size: .8rem; font-weight: 600; white-space: nowrap; }
+    .ms-pendiente { background: #fef3c7; color: #92400e; }
+    .ms-en_curso  { background: #dbeafe; color: #1d4ed8; }
+    .ms-realizado { background: #dcfce7; color: #15803d; }
+    .ms-rechazada { background: #fee2e2; color: #b91c1c; }
+</style>
+{% endblock %}
