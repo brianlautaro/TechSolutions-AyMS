@@ -15,7 +15,7 @@ from models import ESTADO_PENDIENTE, ESTADOS, PRIORIDADES, ServicioContratado, S
 # --- Valentina ---
 
 # --- Franco ---
-
+from adjuntos.routes import adjuntos_bp
 # --- Abril ---
 
 # --- Brian ---
@@ -61,7 +61,7 @@ app.register_blueprint(solicitudes_cliente_bp)
 # --- Valentina ---
 
 # --- Franco ---
-
+app.register_blueprint(adjuntos_bp)
 # --- Abril ---
 
 # --- Brian ---
