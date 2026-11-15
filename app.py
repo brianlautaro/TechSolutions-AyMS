@@ -15,7 +15,11 @@ from models import ESTADO_PENDIENTE, ESTADOS, PRIORIDADES, ServicioContratado, S
 # --- Valentina ---
 
 # --- Franco ---
+
 from adjuntos.routes import adjuntos_bp
+from mis_solicitudes.routes import mis_solicitudes_bp # HU-10: el cliente consulta el estado de sus solicitudes (solo lectura).
+
+
 # --- Abril ---
 
 # --- Brian ---
@@ -57,11 +61,17 @@ app.register_blueprint(api_bp)
 app.register_blueprint(reportes_admin_bp)
 app.register_blueprint(solicitudes_cliente_bp)
 
+
 # --- Blueprints por persona: cada uno registra los suyos solo en su seccion ---
 # --- Valentina ---
 
 # --- Franco ---
+
 app.register_blueprint(adjuntos_bp)
+
+app.register_blueprint(mis_solicitudes_bp) # HU-10: el cliente consulta el estado de sus solicitudes (solo lectura).
+
+
 # --- Abril ---
 
 # --- Brian ---
