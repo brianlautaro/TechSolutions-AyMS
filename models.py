@@ -47,6 +47,14 @@ CREDITOS_POR_PLAN = {
 EVENTO_NUEVA_SOLICITUD = "nueva_solicitud"
 CANAL_EMAIL = "email"
 
+EVENTO_NUEVO_RECLAMO = "nuevo_reclamo"   # HU-16
+
+# HU-16 / HU-17: estados de un reclamo
+RECLAMO_PENDIENTE = "pendiente"
+RECLAMO_EN_REVISION = "en_revision"   # lo usa HU-17
+RECLAMO_RESPONDIDO = "respondido"     # lo usa HU-17
+ESTADOS_RECLAMO = [RECLAMO_PENDIENTE, RECLAMO_EN_REVISION, RECLAMO_RESPONDIDO]
+
 class Plan(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)  # Básico, Profesional, Premium
@@ -181,6 +189,7 @@ class Notificacion(db.Model):
     destinatario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
     cliente_id = db.Column(db.Integer, db.ForeignKey("usuario.id"))
     solicitud_id = db.Column(db.Integer, db.ForeignKey("solicitud.id"))
+    reclamo_id = db.Column(db.Integer, db.ForeignKey("reclamo.id"))
     tipo_evento = db.Column(db.String(40), nullable=False)
     mensaje = db.Column(db.String(300), nullable=False)
     canal = db.Column(db.String(20), default=CANAL_EMAIL, nullable=False)
@@ -188,6 +197,20 @@ class Notificacion(db.Model):
     leida = db.Column(db.Boolean, default=False)
     destinatario = db.relationship("Usuario", foreign_keys=[destinatario_id])
     cliente = db.relationship("Usuario", foreign_keys=[cliente_id])
+    solicitud = db.relationship("Solicitud")
+    reclamo = db.relationship("Reclamo")
+
+class Reclamo(db.Model):
+    """HU-16: reclamo de un cliente. Lo revisa y responde el administrador (HU-17)."""
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
+    servicio_id = db.Column(db.Integer, db.ForeignKey("servicio.id"))      # opcional
+    solicitud_id = db.Column(db.Integer, db.ForeignKey("solicitud.id"))    # opcional
+    descripcion = db.Column(db.Text, nullable=False)
+    estado = db.Column(db.String(20), default=RECLAMO_PENDIENTE, nullable=False)
+    fecha_ingreso = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    usuario = db.relationship("Usuario", backref="reclamos")
+    servicio = db.relationship("Servicio")
     solicitud = db.relationship("Solicitud")
 
 class TokenAPI(db.Model):
