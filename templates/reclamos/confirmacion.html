@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Reclamo registrado · Tech Solutions{% endblock %}
+
+{% block content %}
+<section class="vista vista-angosta">
+  <div class="vista-card vista-card-centrada">
+    <h1>Reclamo registrado</h1>
+    <p>Tu reclamo <strong>#{{ reclamo.id }}</strong> quedó en estado <strong>pendiente</strong>.</p>
+    <p>Fecha de ingreso: {{ reclamo.fecha_ingreso.strftime('%d/%m/%Y %H:%M') }}</p>
+    {% if reclamo.servicio %}<p>Servicio: {{ reclamo.servicio.nombre }}</p>{% endif %}
+    {% if reclamo.solicitud %}<p>Solicitud: #{{ reclamo.solicitud.id }} · {{ reclamo.solicitud.tipo_modificacion }}</p>{% endif %}
+    <p>Ya avisamos al equipo de Tech Solutions: te van a responder a la brevedad.</p>
+
+    <div class="vista-acciones">
+      <a href="{{ url_for('panel') }}" class="btn-primary">Volver a mi panel</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
