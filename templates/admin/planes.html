@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Planes · Tech Solutions{% endblock %}
+
+{% block content %}
+<section class="planes">
+    <h1>Gestión de planes</h1>
+    <p><a href="{{ url_for('admin_dashboard') }}">← Volver al panel</a></p>
+
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+        {% for categoria, mensaje in mensajes %}
+            <p class="msg msg-{{ categoria }}">{{ mensaje }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    <p><a class="btn-primary" href="{{ url_for('planes_admin.crear') }}">+ Nuevo plan</a></p>
+
+    <div class="admin-table-section">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Plan</th>
+                    <th>Tiempo de respuesta</th>
+                    <th>Créditos por mes</th>
+                    <th>Clientes activos</th>
+                    <th>Estado</th>
+                    <th>Última modificación</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in planes %}
+                <tr {% if request.args.get('proponer') == p.id|string %}class="fila-propuesta"{% endif %}>
+                    <td>{{ p.nombre }}</td>
+                    <td>{{ p.tiempo_respuesta_horas }} h</td>
+                    <td>{{ p.creditos_mensuales }}</td>
+                    <td>{{ clientes[p.id] }}</td>
+                    <td>{{ 'Activo' if p.activo else 'Inactivo' }}</td>
+                    <td>
+                        {% if p.fecha_modificacion %}
+                        {{ p.fecha_modificacion.strftime('%d/%m/%Y %H:%M') }}
+                        por {{ p.modificado_por.nombre if p.modificado_por else '—' }}
+                        {% else %}—{% endif %}
+                    </td>
+                    <td class="acciones">
+                        <a href="{{ url_for('planes_admin.editar', plan_id=p.id) }}">Editar</a>
+
+                        <form method="post" action="{{ url_for('planes_admin.cambiar_estado', plan_id=p.id) }}">
+                            <button type="submit">{{ 'Desactivar' if p.activo else 'Activar' }}</button>
+                        </form>
+
+                        <form method="post" action="{{ url_for('planes_admin.eliminar', plan_id=p.id) }}"
+                              onsubmit="return confirm('¿Eliminar el plan «{{ p.nombre }}»?');">
+                            <button type="submit" class="btn-danger">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7">Todavía no hay planes cargados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<style>
+    .planes { display: flex; flex-direction: column; gap: 1rem; }
+    .msg { padding: .7rem; border-radius: 8px; margin: 0; }
+    .msg-error { background: #fde8e8; color: #9b1c1c; }
+    .msg-success { background: #e6f6ea; color: #1e6b34; }
+    .acciones { display: flex; gap: .5rem; align-items: center; }
+    .acciones form { margin: 0; }
+    .fila-propuesta { background: #fff7e0; }
+</style>
+{% endblock %}
