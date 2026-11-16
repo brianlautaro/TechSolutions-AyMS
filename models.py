@@ -60,6 +60,10 @@ class Plan(db.Model):
     nombre = db.Column(db.String(100), nullable=False)  # Básico, Profesional, Premium
     tiempo_respuesta_horas = db.Column(db.Integer)
     activo = db.Column(db.Boolean, default=True)
+        creditos = db.Column(db.Integer)                                            # HU-19 (Abril)
+    modificado_por_id = db.Column(db.Integer, db.ForeignKey("usuario.id"))      # HU-19 (Abril)
+    fecha_modificacion = db.Column(db.DateTime)                                 # HU-19 (Abril)
+    modificado_por = db.relationship("Usuario", foreign_keys=[modificado_por_id])
     
     @property
     def prioridad_sugerida(self):
