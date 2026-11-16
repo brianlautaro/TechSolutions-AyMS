@@ -285,6 +285,22 @@ class TokenAPI(db.Model):
 # --- Valentina ---
 
 # --- Franco ---
+# --- Franco ---
+# HU-09: archivos adjuntos de una solicitud
+ESTADOS_CON_CARGA = (ESTADO_PENDIENTE, ESTADO_EN_CURSO)   # en estos estados se puede subir
+MAX_ADJUNTOS = 5                                          # archivos por solicitud
+MAX_BYTES_ADJUNTO = 5 * 1024 * 1024                       # 5 MB
+EXTENSIONES_ADJUNTO = {"pdf", "jpg", "jpeg", "png"}
+
+
+class Adjunto(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    solicitud_id = db.Column(db.Integer, db.ForeignKey("solicitud.id"), nullable=False)
+    nombre_original = db.Column(db.String(255), nullable=False)   # el que ve el cliente
+    nombre_guardado = db.Column(db.String(255), nullable=False)   # el nombre real en el disco
+    tamano_bytes = db.Column(db.Integer, nullable=False)
+    fecha_carga = db.Column(db.DateTime, default=datetime.utcnow)
+    solicitud = db.relationship("Solicitud", backref="adjuntos")
 
 # --- Abril ---
 
