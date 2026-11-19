@@ -60,7 +60,7 @@ class Plan(db.Model):
     nombre = db.Column(db.String(100), nullable=False)  # Básico, Profesional, Premium
     tiempo_respuesta_horas = db.Column(db.Integer)
     activo = db.Column(db.Boolean, default=True)
-        creditos = db.Column(db.Integer)                                            # HU-19 (Abril)
+    creditos = db.Column(db.Integer)                                            # HU-19 (Abril)
     modificado_por_id = db.Column(db.Integer, db.ForeignKey("usuario.id"))      # HU-19 (Abril)
     fecha_modificacion = db.Column(db.DateTime)                                 # HU-19 (Abril)
     modificado_por = db.relationship("Usuario", foreign_keys=[modificado_por_id])
@@ -98,8 +98,7 @@ class Usuario(UserMixin, db.Model):
     bloqueado_hasta = db.Column(db.DateTime)
     fecha_alta = db.Column(db.DateTime, default=datetime.utcnow)
     plan_id = db.Column(db.Integer, db.ForeignKey("plan.id"))
-    plan = db.relationship("Plan")
-
+    plan = db.relationship("Plan", foreign_keys=[plan_id])  # Plan también tiene FK a usuario (HU-19)
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -334,7 +333,47 @@ class Adjunto(db.Model):
     solicitud = db.relationship("Solicitud", backref="adjuntos")
 
 # --- Abril ---
+# --- HU-07: solicitar cambio de plan ---
+# Tabla nueva (no cambia ninguna existente): db.create_all() la crea sola,
+# no hace falta borrar instance\techsolutions.db.
+# Diccionario de datos: Solicitud_cambio_plan = @ID_Cliente + Plan_actual +
+#                       Plan_solicitado + Fecha_solicitud + (Motivo)
+EVENTO_CAMBIO_PLAN = "cambio_de_plan"     # DD: Tipo_evento "Cambio_de_plan"
+ORIGEN_WEB = "web"
+ORIGEN_WHATSAPP = "whatsapp"              # canal de WhatsApp Business (release posterior)
+MAX_MOTIVO_CAMBIO_PLAN = 300
 
+
+class SolicitudCambioPlan(db.Model):
+    """HU-07 / CU-09: pedido del cliente para pasar a otro plan.
+
+    Estados (los mismos del DD para solicitudes):
+    pendiente -> realizado (el admin lo aprueba y se aplica el plan nuevo)
+    pendiente -> rechazada (el admin lo rechaza con un motivo)
+    """
+    __tablename__ = "solicitud_cambio_plan"
+
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
+    plan_actual_id = db.Column(db.Integer, db.ForeignKey("plan.id"))
+    plan_solicitado_id = db.Column(db.Integer, db.ForeignKey("plan.id"), nullable=False)
+    motivo = db.Column(db.String(MAX_MOTIVO_CAMBIO_PLAN))           # opcional
+    estado = db.Column(db.String(20), default=ESTADO_PENDIENTE, nullable=False)
+    origen = db.Column(db.String(20), default=ORIGEN_WEB, nullable=False)
+    fecha_solicitud = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    fecha_resolucion = db.Column(db.DateTime)
+    motivo_rechazo = db.Column(db.String(300))
+    resuelta_por_id = db.Column(db.Integer, db.ForeignKey("usuario.id"))
+
+    usuario = db.relationship("Usuario", foreign_keys=[usuario_id], backref="cambios_de_plan")
+    plan_actual = db.relationship("Plan", foreign_keys=[plan_actual_id])
+    plan_solicitado = db.relationship("Plan", foreign_keys=[plan_solicitado_id])
+    resuelta_por = db.relationship("Usuario", foreign_keys=[resuelta_por_id])
+
+    @classmethod
+    def pendiente_de(cls, usuario):
+        """Criterio 4 de HU-07: la solicitud de cambio pendiente del cliente, si tiene una."""
+        return cls.query.filter_by(usuario_id=usuario.id, estado=ESTADO_PENDIENTE).first()
 # --- Brian ---
 
 # --- Aristides ---
