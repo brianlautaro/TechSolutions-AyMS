@@ -397,3 +397,22 @@ class RespuestaReclamo(db.Model):
     # "respuesta" queda disponible como reclamo.respuesta (sin tocar la clase Reclamo)
     reclamo = db.relationship("Reclamo", backref=db.backref("respuesta", uselist=False))
     admin = db.relationship("Usuario")
+
+# HU-18: acciones que el administrador hace sobre la cuenta de un cliente
+ACCION_CLIENTE_EDICION = "edicion"
+ACCION_CLIENTE_BAJA = "baja"
+
+
+class HistorialCliente(db.Model):
+    """HU-18: registro de cambios del administrador sobre un cliente (fecha de cada modificación)."""
+    __tablename__ = "historial_cliente"
+
+    id = db.Column(db.Integer, primary_key=True)
+    cliente_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey("usuario.id"))
+    accion = db.Column(db.String(20), nullable=False)
+    detalle = db.Column(db.String(300), nullable=False)
+    fecha = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    cliente = db.relationship("Usuario", foreign_keys=[cliente_id])
+    admin = db.relationship("Usuario", foreign_keys=[admin_id])

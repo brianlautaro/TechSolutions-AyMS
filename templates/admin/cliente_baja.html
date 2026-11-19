@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Dar de baja a {{ cliente.nombre }} · Tech Solutions{% endblock %}
+
+{% block content %}
+<section class="vista vista-angosta">
+  <a href="{{ url_for('clientes_admin.ficha', cliente_id=cliente.id) }}" class="vista-volver">← Volver a la ficha</a>
+
+  <div class="vista-card">
+    <h1>Dar de baja a {{ cliente.nombre }} {{ cliente.apellido or '' }}</h1>
+    <p>Se marcará como inactivo, se cerrarán sus sesiones abiertas y no podrá volver a ingresar.</p>
+
+    {% if abiertas %}
+    <p class="msg msg-error" style="margin-top: 1rem;">
+      Atención: este cliente tiene <strong>{{ abiertas }}</strong> solicitud{{ '' if abiertas == 1 else 'es' }}
+      abierta{{ '' if abiertas == 1 else 's' }} (pendiente{{ '' if abiertas == 1 else 's' }} o en curso).
+      Quedarán abiertas después de la baja.
+    </p>
+    {% endif %}
+
+    {% if error %}<p class="msg msg-error">{{ error }}</p>{% endif %}
+
+    <form class="form-baja" method="post" action="{{ url_for('clientes_admin.baja', cliente_id=cliente.id) }}">
+      {% if abiertas %}
+      <label class="check">
+        <input type="checkbox" name="entiendo" value="1">
+        Entiendo que quedan {{ abiertas }} solicitud{{ '' if abiertas == 1 else 'es' }} abierta{{ '' if abiertas == 1 else 's' }} y quiero dar de baja igual.
+      </label>
+      {% endif %}
+      <div class="vista-acciones">
+        <button type="submit" class="btn-peligro">Confirmar baja</button>
+        <a href="{{ url_for('clientes_admin.ficha', cliente_id=cliente.id) }}" class="btn-secundario">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<style>
+    .form-baja { display: flex; flex-direction: column; gap: 1rem; margin-top: 1.25rem; }
+    .form-baja .check { display: flex; gap: .6rem; align-items: flex-start; font-size: .92rem; }
+    .form-baja .btn-secundario { background: var(--sky-pale); color: var(--sky); border: 1px solid var(--border); text-decoration: none; }
+</style>
+{% endblock %}
