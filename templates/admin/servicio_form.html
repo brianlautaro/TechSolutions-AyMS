@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Editar' if servicio else 'Nuevo' }} servicio · Tech Solutions{% endblock %}
+
+{% block content %}
+<section class="servicio-form-page">
+    <h1>{{ 'Editar «' ~ servicio.nombre ~ '»' if servicio else 'Nuevo servicio' }}</h1>
+    <p><a href="{{ url_for('servicios_admin.listar') }}">← Volver al catálogo</a></p>
+
+    {% if servicio and servicio.fecha_modificacion %}
+    <p class="ultima-mod">
+        Última modificación: {{ servicio.fecha_modificacion.strftime('%d/%m/%Y %H:%M') }}
+        {% if servicio.modificado_por %}por {{ servicio.modificado_por.nombre }} {{ servicio.modificado_por.apellido or '' }}{% endif %}
+    </p>
+    {% endif %}
+
+    <form class="form-servicio" method="post" novalidate
+          action="{{ url_for('servicios_admin.editar', servicio_id=servicio.id) if servicio else url_for('servicios_admin.nuevo') }}">
+
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre" name="nombre" maxlength="150" required value="{{ datos.nombre }}">
+        {% if errores.nombre %}<small class="error">{{ errores.nombre }}</small>{% endif %}
+
+        <label for="categoria">Categoría</label>
+        <input type="text" id="categoria" name="categoria" maxlength="100" required list="categorias"
+               value="{{ datos.categoria }}" placeholder="Ej.: Tecnología">
+        <datalist id="categorias">
+            {% for c in categorias %}<option value="{{ c }}">{% endfor %}
+        </datalist>
+        {% if errores.categoria %}<small class="error">{{ errores.categoria }}</small>{% endif %}
+
+        <label for="descripcion">Descripción</label>
+        <textarea id="descripcion" name="descripcion" maxlength="500" rows="4" required>{{ datos.descripcion }}</textarea>
+        {% if errores.descripcion %}<small class="error">{{ errores.descripcion }}</small>{% endif %}
+
+        <div class="botones">
+            <button type="submit" class="btn-primary">{{ 'Guardar cambios' if servicio else 'Crear servicio' }}</button>
+            <a href="{{ url_for('servicios_admin.listar') }}" class="btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</section>
+
+<style>
+    .servicio-form-page { display: flex; flex-direction: column; gap: 1rem; }
+    .ultima-mod { margin: 0; color: #555; font-size: .9rem; }
+    .form-servicio { display: flex; flex-direction: column; gap: .5rem; max-width: 520px; }
+    .form-servicio input, .form-servicio textarea { padding: .6rem; font: inherit; border-radius: 8px; }
+    .form-servicio .error { color: #9b1c1c; }
+    .botones { display: flex; gap: .5rem; align-items: center; margin-top: .5rem; }
+</style>
+{% endblock %}
