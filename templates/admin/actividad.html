@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Actividad de clientes · Tech Solutions{% endblock %}
+
+{% block content %}
+<section class="vista">
+  <a href="{{ url_for('admin_dashboard') }}" class="vista-volver">← Volver al panel</a>
+
+  <div class="vista-card">
+    <h1>Actividad de clientes</h1>
+    <p>Registro de solo lectura. Las horas están en UTC.</p>
+    <div class="vista-links">
+      <a href="{{ url_for('actividad_admin.lista') }}">Todas</a>
+      {% for clave, nombre in nombres.items() %}
+        <a href="{{ url_for('actividad_admin.lista', tipo=clave) }}">{{ nombre }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if registros %}
+  <div class="admin-table-section">
+    <table class="admin-table">
+      <thead>
+        <tr><th>Fecha y hora</th><th>Cliente</th><th>Acción</th><th>Detalle</th></tr>
+      </thead>
+      <tbody>
+        {% for r in registros %}
+        <tr>
+          <td>{{ r.fecha.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+          <td>{{ r.usuario.nombre }} {{ r.usuario.apellido or '' }}</td>
+          <td>{{ nombres.get(r.tipo_accion, r.tipo_accion) }}</td>
+          <td>{{ r.detalle or '' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="vista-card"><p>Todavía no hay actividad registrada.</p></div>
+  {% endif %}
+</section>
+{% endblock %}
