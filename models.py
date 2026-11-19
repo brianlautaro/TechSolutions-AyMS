@@ -313,9 +313,28 @@ class TokenAPI(db.Model):
 # =====================================================================
 
 # --- Valentina ---
+# HU-05: aviso al administrador cuando un cliente contrata un servicio
+EVENTO_NUEVA_CONTRATACION = "nueva_contratacion"
+
 
 # --- Franco ---
-# --- Franco ---
+# HU-23: registro de la actividad de los clientes (solo se agrega, nunca se modifica)
+ACCION_INICIO_SESION = "inicio_sesion"
+ACCION_SOLICITUD = "solicitud_abierta"
+ACCION_ADJUNTO = "archivo_adjuntado"
+ACCION_RECLAMO = "reclamo_presentado"
+
+
+class ActividadCliente(db.Model):
+    __tablename__ = "actividad_cliente"
+
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
+    tipo_accion = db.Column(db.String(30), nullable=False)
+    detalle = db.Column(db.String(200))
+    fecha = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    usuario = db.relationship("Usuario")
+    
 # HU-09: archivos adjuntos de una solicitud
 ESTADOS_CON_CARGA = (ESTADO_PENDIENTE, ESTADO_EN_CURSO)   # en estos estados se puede subir
 MAX_ADJUNTOS = 5                                          # archivos por solicitud

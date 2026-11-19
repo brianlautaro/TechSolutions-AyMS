@@ -4,9 +4,18 @@ La misma lista de filas se usa para la tabla en pantalla, el CSV y el PDF.
 """
 from datetime import timedelta
 
-from models import ROL_CLIENTE, Plan, Solicitud, Usuario
+from actividad.admin_routes import NOMBRE_ACCION
+from models import (
+    RECLAMO_EN_REVISION, RECLAMO_PENDIENTE, RECLAMO_RESPONDIDO, ROL_CLIENTE,
+    ActividadCliente, Plan, Reclamo, Solicitud, Usuario,
+)
 
 FORMATO_FECHA = "%d/%m/%Y %H:%M"
+NOMBRE_ESTADO_RECLAMO = {
+    RECLAMO_PENDIENTE: "Pendiente",
+    RECLAMO_EN_REVISION: "En revisión",
+    RECLAMO_RESPONDIDO: "Respondido",
+}
 
 
 def _en_rango(consulta, columna, desde, hasta):
@@ -62,11 +71,60 @@ def reporte_planes(desde, hasta):
         return columnas, []
     return columnas, filas
 
+def _recortar(texto, largo=80):
+    """Las descripciones pueden ser largas: en el reporte va un resumen."""
+    texto = (texto or "").replace("\n", " ").strip()
+    return texto if len(texto) <= largo else texto[: largo - 1] + "…"
+
+
+def reporte_reclamos(desde, hasta):
+    reclamos = (
+        _en_rango(Reclamo.query, Reclamo.fecha_ingreso, desde, hasta)
+        .order_by(Reclamo.fecha_ingreso)
+        .all()
+    )
+    columnas = ["#", "Ingreso", "Cliente", "Servicio", "Solicitud",
+                "Estado", "Descripción", "Respondido"]
+    filas = [
+        [
+            r.id,
+            _fecha(r.fecha_ingreso),
+            f"{r.usuario.nombre} {r.usuario.apellido or ''}".strip(),
+            r.servicio.nombre if r.servicio else "-",
+            f"#{r.solicitud_id}" if r.solicitud_id else "-",
+            NOMBRE_ESTADO_RECLAMO.get(r.estado, r.estado),
+            _recortar(r.descripcion),
+            _fecha(r.respuesta.fecha) if r.respuesta else "-",
+        ]
+        for r in reclamos
+    ]
+    return columnas, filas
+
+
+def reporte_actividad(desde, hasta):
+    registros = (
+        _en_rango(ActividadCliente.query, ActividadCliente.fecha, desde, hasta)
+        .order_by(ActividadCliente.fecha)
+        .all()
+    )
+    columnas = ["Fecha", "Cliente", "Email", "Acción", "Detalle"]
+    filas = [
+        [
+            _fecha(a.fecha),
+            f"{a.usuario.nombre} {a.usuario.apellido or ''}".strip(),
+            a.usuario.email,
+            NOMBRE_ACCION.get(a.tipo_accion, a.tipo_accion),
+            a.detalle or "-",
+        ]
+        for a in registros
+    ]
+    return columnas, filas
+
 
 # Tipos de reporte disponibles. Para sumar uno nuevo, se agrega acá.
 REPORTES = {
     "planes": {"titulo": "Planes", "generar": reporte_planes},
     "solicitudes": {"titulo": "Solicitudes", "generar": reporte_solicitudes},
-    # "reclamos":  cuando exista el modelo de HU-16
-    # "actividad": cuando exista el modelo de HU-23
+    "reclamos": {"titulo": "Reclamos", "generar": reporte_reclamos},
+    "actividad": {"titulo": "Actividad de clientes", "generar": reporte_actividad},
 }
