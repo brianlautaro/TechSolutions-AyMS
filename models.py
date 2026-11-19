@@ -60,7 +60,7 @@ class Plan(db.Model):
     nombre = db.Column(db.String(100), nullable=False)  # Básico, Profesional, Premium
     tiempo_respuesta_horas = db.Column(db.Integer)
     activo = db.Column(db.Boolean, default=True)
-        creditos = db.Column(db.Integer)                                            # HU-19 (Abril)
+    creditos = db.Column(db.Integer)                                            # HU-19 (Abril)
     modificado_por_id = db.Column(db.Integer, db.ForeignKey("usuario.id"))      # HU-19 (Abril)
     fecha_modificacion = db.Column(db.DateTime)                                 # HU-19 (Abril)
     modificado_por = db.relationship("Usuario", foreign_keys=[modificado_por_id])
@@ -98,8 +98,7 @@ class Usuario(UserMixin, db.Model):
     bloqueado_hasta = db.Column(db.DateTime)
     fecha_alta = db.Column(db.DateTime, default=datetime.utcnow)
     plan_id = db.Column(db.Integer, db.ForeignKey("plan.id"))
-    plan = db.relationship("Plan")
-
+    plan = db.relationship("Plan", foreign_keys=[plan_id])  # Plan también tiene FK a usuario (HU-19)
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
