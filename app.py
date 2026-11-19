@@ -21,6 +21,7 @@ from mis_solicitudes.routes import mis_solicitudes_bp # HU-10: el cliente consul
 
 
 # --- Abril ---
+from servicios.admin_routes import servicios_admin_bp  # HU-20: gestionar servicios
 
 from planes.admin_routes import planes_admin_bp  # HU-19: gestionar planes
 # --- Brian ---
@@ -74,6 +75,7 @@ app.register_blueprint(mis_solicitudes_bp) # HU-10: el cliente consulta el estad
 
 
 # --- Abril ---
+app.register_blueprint(servicios_admin_bp)  # HU-20: gestionar servicios
 app.register_blueprint(planes_admin_bp)  # HU-19: gestionar planes
 
 # --- Brian ---

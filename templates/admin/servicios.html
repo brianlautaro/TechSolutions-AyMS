@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Servicios · Tech Solutions{% endblock %}
+
+{% block content %}
+<section class="servicios-admin">
+    <h1>Catálogo de servicios</h1>
+    <p><a href="{{ url_for('admin_dashboard') }}">← Volver al panel</a></p>
+
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+        {% for categoria, mensaje in mensajes %}
+            <p class="msg msg-{{ categoria }}">{{ mensaje }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    {# HU-20, criterio 3: no se puede eliminar; se propone desactivarlo #}
+    {% if propuesta %}
+    {% set s = propuesta.servicio %}
+    <div class="propuesta">
+        <strong>No se puede eliminar «{{ s.nombre }}».</strong>
+        <p>
+            Tiene registros asociados:
+            {% if propuesta.solicitudes %}{{ propuesta.solicitudes }} solicitud{{ 'es' if propuesta.solicitudes != 1 }}{% endif %}
+            {%- if propuesta.solicitudes and (propuesta.contrataciones or propuesta.reclamos) %}, {% endif %}
+            {% if propuesta.contrataciones %}{{ propuesta.contrataciones }} contratación{{ 'es' if propuesta.contrataciones != 1 }}{% endif %}
+            {%- if propuesta.contrataciones and propuesta.reclamos %}, {% endif %}
+            {% if propuesta.reclamos %}{{ propuesta.reclamos }} reclamo{{ 's' if propuesta.reclamos != 1 }}{% endif %}.
+        </p>
+        {% if s.activo %}
+        <p>Podés desactivarlo: deja de ofrecerse en el catálogo y no se abren solicitudes nuevas, pero se conserva el historial.</p>
+        <form method="post" action="{{ url_for('servicios_admin.desactivar', servicio_id=s.id) }}">
+            <button type="submit" class="btn-danger">Desactivar «{{ s.nombre }}»</button>
+            <a href="{{ url_for('servicios_admin.listar') }}" class="btn-secondary">Cancelar</a>
+        </form>
+        {% else %}
+        <p>El servicio ya está desactivado, así que no se ofrece en el catálogo.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <p><a href="{{ url_for('servicios_admin.nuevo') }}" class="btn-primary">Nuevo servicio</a></p>
+
+    <div class="admin-table-section">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                    <th>Última modificación</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in servicios %}
+                <tr class="{{ '' if s.activo else 'fila-inactiva' }}">
+                    <td>{{ s.nombre }}</td>
+                    <td>{{ s.categoria or '—' }}</td>
+                    <td>{{ s.descripcion or '' }}</td>
+                    <td>
+                        {% if s.activo %}
+                        <span class="estado-badge estado-activo">Activo</span>
+                        {% else %}
+                        <span class="estado-badge estado-inactivo">Inactivo</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if s.fecha_modificacion %}
+                        {{ s.fecha_modificacion.strftime('%d/%m/%Y %H:%M') }}
+                        {% if s.modificado_por %}<br><small>{{ s.modificado_por.nombre }} {{ s.modificado_por.apellido or '' }}</small>{% endif %}
+                        {% else %}—{% endif %}
+                    </td>
+                    <td class="acciones">
+                        <a href="{{ url_for('servicios_admin.editar', servicio_id=s.id) }}" class="btn-secondary">Editar</a>
+                        {% if s.activo %}
+                        <form method="post" action="{{ url_for('servicios_admin.desactivar', servicio_id=s.id) }}"
+                              onsubmit="return confirm('¿Desactivar «{{ s.nombre }}»? Dejará de ofrecerse en el catálogo y sus clientes no podrán abrir solicitudes nuevas.');">
+                            <button type="submit" class="btn-secondary">Desactivar</button>
+                        </form>
+                        {% else %}
+                        <form method="post" action="{{ url_for('servicios_admin.activar', servicio_id=s.id) }}">
+                            <button type="submit" class="btn-secondary">Activar</button>
+                        </form>
+                        {% endif %}
+                        <form method="post" action="{{ url_for('servicios_admin.eliminar', servicio_id=s.id) }}"
+                              onsubmit="return confirm('¿Eliminar «{{ s.nombre }}»? Esta acción no se puede deshacer.');">
+                            <button type="submit" class="btn-danger">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6">Todavía no hay servicios cargados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<style>
+    .servicios-admin { display: flex; flex-direction: column; gap: 1rem; }
+    .msg { padding: .7rem; border-radius: 8px; margin: 0; }
+    .msg-error { background: #fde8e8; color: #9b1c1c; }
+    .msg-success { background: #e6f6ea; color: #1e6b34; }
+    .propuesta { padding: 1rem; border-radius: 8px; background: #fff7e0; border: 1px solid #e8c04a; display: flex; flex-direction: column; gap: .5rem; }
+    .propuesta p { margin: 0; }
+    .propuesta form { display: flex; gap: .5rem; align-items: center; }
+    .acciones { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; }
+    .acciones form { margin: 0; }
+    .fila-inactiva td { opacity: .6; }
+</style>
+{% endblock %}
