@@ -313,6 +313,8 @@ class TokenAPI(db.Model):
 # =====================================================================
 
 # --- Valentina ---
+# HU-05: aviso al administrador cuando un cliente contrata un servicio
+EVENTO_NUEVA_CONTRATACION = "nueva_contratacion"
 
 
 # --- Franco ---

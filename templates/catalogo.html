@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Catálogo de servicios · Tech Solutions{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <h1 class="section-title">Catálogo de servicios</h1>
+
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+        {% for categoria, mensaje in mensajes %}
+            <p class="msg msg-{{ categoria }}">{{ mensaje }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    {% if not tiene_plan %}
+    <p class="msg msg-error">Necesitás un plan activo para contratar servicios.</p>
+    {% endif %}
+
+    {% if servicios %}
+    <ul class="servicios-lista">
+        {% for s in servicios %}
+        <li class="servicio-item">
+            <div class="servicio-datos">
+                <h3>{{ s.nombre }}</h3>
+                {% if s.categoria %}<small>{{ s.categoria }}</small>{% endif %}
+                <p>{{ s.descripcion }}</p>
+            </div>
+            <div class="servicio-estado">
+                {% if s.id in contratados %}
+                <span class="estado-badge estado-activo">Ya lo tenés</span>
+                {% elif tiene_plan %}
+                <form method="post" action="{{ url_for('catalogo.contratar', servicio_id=s.id) }}"
+                      onsubmit="return confirm('¿Confirmás la contratación de «{{ s.nombre }}»?');">
+                    <button type="submit" class="btn-primary">Contratar</button>
+                </form>
+                {% endif %}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">
+        <p>Por ahora no hay servicios disponibles.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
