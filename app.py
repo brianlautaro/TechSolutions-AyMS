@@ -165,6 +165,15 @@ def logout():
     session.clear()
     return redirect(url_for("home"))
 
+@app.after_request
+def no_guardar_en_cache(respuesta):
+    # HU-03: si hay sesión abierta, el navegador no guarda copia de la página.
+    # Así, después de cerrar sesión, el botón "atrás" vuelve a pedirla al servidor
+    # y este redirige al login.
+    if current_user.is_authenticated and request.endpoint != "static":
+        respuesta.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    return respuesta
+
 
 if __name__ == "__main__":
     app.run(debug=True)
