@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Cambio de plan · Tech Solutions{% endblock %}
+
+{% set NOMBRE_ESTADO = {'pendiente': 'Pendiente', 'realizado': 'Aprobada', 'rechazada': 'Rechazada'} %}
+
+{% block content %}
+<div class="main-content confirmacion-box">
+    {% if solicitud.estado == 'pendiente' %}
+    <h1 class="section-title">¡Pedido registrado!</h1>
+    <p class="msg msg-success">Tu solicitud de cambio de plan quedó en estado <strong>pendiente</strong>
+        y ya avisamos al administrador.</p>
+    {% else %}
+    <h1 class="section-title">Solicitud de cambio de plan #{{ solicitud.id }}</h1>
+    {% endif %}
+
+    <dl class="resumen">
+        <dt>Número</dt><dd>#{{ solicitud.id }}</dd>
+        <dt>Plan actual</dt><dd>{{ solicitud.plan_actual.nombre if solicitud.plan_actual else 'Sin plan' }}</dd>
+        <dt>Plan solicitado</dt><dd>{{ solicitud.plan_solicitado.nombre }}</dd>
+        {% if solicitud.motivo %}<dt>Motivo</dt><dd>{{ solicitud.motivo }}</dd>{% endif %}
+        <dt>Estado</dt><dd><span class="estado-badge">{{ NOMBRE_ESTADO.get(solicitud.estado, solicitud.estado) }}</span></dd>
+        <dt>Fecha de solicitud</dt><dd>{{ solicitud.fecha_solicitud.strftime('%d/%m/%Y %H:%M') }}</dd>
+        {% if solicitud.motivo_rechazo %}<dt>Motivo del rechazo</dt><dd>{{ solicitud.motivo_rechazo }}</dd>{% endif %}
+    </dl>
+
+    <div class="acciones">
+        <a href="{{ url_for('cambio_plan.planes') }}" class="btn-secondary">Ver planes</a>
+        <a href="{{ url_for('panel') }}" class="btn-primary">Volver a mi panel</a>
+    </div>
+</div>
+
+<style>
+    .confirmacion-box { max-width: 640px; display: flex; flex-direction: column; gap: 1rem; }
+    .msg { padding: .7rem 1rem; border-radius: 8px; margin: 0; }
+    .msg-success { background: #def7ec; color: #03543f; }
+    .resumen { display: grid; grid-template-columns: max-content 1fr; gap: .5rem 1rem; }
+    .resumen dt { font-weight: 600; }
+    .resumen dd { margin: 0; overflow-wrap: anywhere; }
+    .resumen .estado-badge { background: #fef3c7; color: #92400e; }
+    .acciones { display: flex; gap: .75rem; flex-wrap: wrap; }
+</style>
+{% endblock %}

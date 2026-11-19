@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Mi plan · Tech Solutions{% endblock %}
+
+{% block content %}
+<div class="main-content cambio-plan-box">
+    <h1 class="section-title">Mi plan</h1>
+
+    {% if current_user.plan %}
+    <p>Tu plan vigente es <strong>{{ current_user.plan.nombre }}</strong>.</p>
+    {% else %}
+    <p class="msg msg-error" role="alert">No tenés un plan activo, así que no podés pedir un cambio.
+        Contactá a la consultora para contratar uno.</p>
+    {% endif %}
+
+    {% if error %}
+    <p class="msg msg-error" role="alert">{{ error }}</p>
+    {% endif %}
+
+    {# Criterio 4: si ya hay una pendiente, se muestra y no se deja pedir otra #}
+    {% if pendiente %}
+    <div class="msg msg-info">
+        <strong>Tenés una solicitud de cambio en curso</strong>
+        <dl class="resumen">
+            <dt>Número</dt><dd>#{{ pendiente.id }}</dd>
+            <dt>Cambio</dt>
+            <dd>{{ pendiente.plan_actual.nombre if pendiente.plan_actual else 'Sin plan' }}
+                → {{ pendiente.plan_solicitado.nombre }}</dd>
+            <dt>Fecha</dt><dd>{{ pendiente.fecha_solicitud.strftime('%d/%m/%Y %H:%M') }}</dd>
+            <dt>Estado</dt><dd><span class="estado-badge estado-pendiente">Pendiente</span></dd>
+        </dl>
+    </div>
+    {% endif %}
+
+    {% set puede_pedir = current_user.plan and not pendiente %}
+
+    <form method="post" action="{{ url_for('cambio_plan.solicitar') }}" novalidate>
+        <fieldset class="planes-grid" {% if not puede_pedir %}disabled{% endif %}>
+            <legend>Planes disponibles</legend>
+            {% for p in planes %}
+            {% set es_actual = p.id == current_user.plan_id %}
+            {% set elegido = datos.plan_id == p.id %}
+            <label class="plan-card {% if es_actual %}plan-actual{% endif %}">
+                <input type="radio" name="plan_id" value="{{ p.id }}" {% if elegido %}checked{% endif %}>
+                <span class="plan-nombre">{{ p.nombre }}</span>
+                {% if es_actual %}<span class="estado-badge estado-actual">Tu plan actual</span>{% endif %}
+                <span>Respuesta en {{ p.tiempo_respuesta_horas }} h</span>
+                <span>{{ p.creditos_mensuales }} solicitudes de modificación por mes</span>
+                {% if es_actual and not p.activo %}
+                <small>Este plan ya no se ofrece a clientes nuevos, pero vos lo conservás.</small>
+                {% endif %}
+            </label>
+            {% else %}
+            <p>No hay planes disponibles en este momento.</p>
+            {% endfor %}
+        </fieldset>
+
+        {% if puede_pedir %}
+        <div class="campo">
+            <label for="motivo">Motivo <small>(opcional)</small></label>
+            <textarea id="motivo" name="motivo" rows="3" maxlength="{{ max_motivo }}"
+                placeholder="Contanos por qué querés cambiar de plan.">{{ datos.motivo or '' }}</textarea>
+        </div>
+
+        <div class="acciones">
+            <button type="submit" class="btn-primary">Solicitar cambio de plan</button>
+            <a href="{{ url_for('panel') }}" class="btn-secondary">Cancelar</a>
+        </div>
+        {% else %}
+        <div class="acciones">
+            <a href="{{ url_for('panel') }}" class="btn-secondary">Volver a mi panel</a>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<style>
+    .cambio-plan-box { max-width: 760px; display: flex; flex-direction: column; gap: 1rem; }
+    .cambio-plan-box form { display: flex; flex-direction: column; gap: 1rem; }
+    .planes-grid { border: 0; padding: 0; margin: 0; display: grid; gap: .8rem;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+    .planes-grid legend { font-weight: 600; margin-bottom: .5rem; }
+    .planes-grid[disabled] { opacity: .75; }
+    .plan-card { display: flex; flex-direction: column; gap: .35rem; padding: 1rem; cursor: pointer;
+        border: 1px solid var(--border); border-radius: 12px; background: var(--white); }
+    .plan-card:has(input:checked) { border: 2px solid var(--primary, #2563eb); }
+    .plan-actual { background: #f0f7ff; }
+    .plan-nombre { font-size: 1.15rem; font-weight: 700; }
+    .estado-actual { background: #dbeafe; color: #1e40af; align-self: flex-start; }
+    .estado-pendiente { background: #fef3c7; color: #92400e; }
+    .campo { display: flex; flex-direction: column; gap: .35rem; }
+    .campo label { font-weight: 600; }
+    .campo textarea { padding: .7rem; font: inherit; border-radius: 8px; resize: vertical;
+        border: 1px solid var(--border); background: var(--white); color: var(--text); }
+    .msg { padding: .7rem 1rem; border-radius: 8px; margin: 0; }
+    .msg-error { background: #fde8e8; color: #9b1c1c; }
+    .msg-info { background: #e8f0fd; color: #1c3f9b; }
+    .resumen { display: grid; grid-template-columns: max-content 1fr; gap: .3rem 1rem; margin: .5rem 0 0; }
+    .resumen dt { font-weight: 600; }
+    .resumen dd { margin: 0; }
+    .acciones { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
+</style>
+{% endblock %}
