@@ -17,7 +17,8 @@ from models import ESTADO_PENDIENTE, ESTADOS, PRIORIDADES, ServicioContratado, S
 from catalogo.routes import catalogo_bp  # HU-05: catálogo y contratación de servicios
 
 # --- Franco ---
-
+from actividad.admin_routes import actividad_admin_bp  # HU-23: el admin consulta la actividad
+from actividad.registro import iniciar_registro_actividad  # HU-23: registro de actividad de clientes
 from adjuntos.routes import adjuntos_bp
 from mis_solicitudes.routes import mis_solicitudes_bp # HU-10: el cliente consulta el estado de sus solicitudes (solo lectura).
 
@@ -77,9 +78,12 @@ app.register_blueprint(catalogo_bp)  # HU-05: catálogo y contratación de servi
 
 # --- Franco ---
 
+app.register_blueprint(actividad_admin_bp)  # HU-23: el admin consulta la actividad
+iniciar_registro_actividad() # HU-23: empieza a anotar la actividad de los clientes
 app.register_blueprint(adjuntos_bp)
 
 app.register_blueprint(mis_solicitudes_bp) # HU-10: el cliente consulta el estado de sus solicitudes (solo lectura).
+
 
 
 # --- Abril ---
