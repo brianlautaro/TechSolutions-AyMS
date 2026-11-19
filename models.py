@@ -143,8 +143,12 @@ class Usuario(UserMixin, db.Model):
 class Servicio(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(150), nullable=False)
+    categoria = db.Column(db.String(100))                                  # HU-20
     descripcion = db.Column(db.String(500))
     activo = db.Column(db.Boolean, default=True)
+    fecha_modificacion = db.Column(db.DateTime)                            # HU-20: último cambio
+    modificado_por_id = db.Column(db.Integer, db.ForeignKey("usuario.id"))  # HU-20: quién lo hizo
+    modificado_por = db.relationship("Usuario")
 
 
 class ServicioContratado(db.Model):
