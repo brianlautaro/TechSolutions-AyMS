@@ -377,3 +377,23 @@ class SolicitudCambioPlan(db.Model):
 # --- Brian ---
 
 # --- Aristides ---
+
+# HU-17: eventos de notificación al cliente por un reclamo y largo máximo de la respuesta
+EVENTO_RECLAMO_EN_REVISION = "reclamo_en_revision"
+EVENTO_RECLAMO_RESPONDIDO = "reclamo_respondido"
+MAX_RESPUESTA_RECLAMO = 1000
+
+
+class RespuestaReclamo(db.Model):
+    """HU-17: respuesta del administrador a un reclamo (una por reclamo)."""
+    __tablename__ = "respuesta_reclamo"
+
+    id = db.Column(db.Integer, primary_key=True)
+    reclamo_id = db.Column(db.Integer, db.ForeignKey("reclamo.id"), nullable=False, unique=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey("usuario.id"))
+    texto = db.Column(db.Text, nullable=False)
+    fecha = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    # "respuesta" queda disponible como reclamo.respuesta (sin tocar la clase Reclamo)
+    reclamo = db.relationship("Reclamo", backref=db.backref("respuesta", uselist=False))
+    admin = db.relationship("Usuario")

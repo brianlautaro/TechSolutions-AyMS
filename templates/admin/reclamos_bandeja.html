@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Reclamos · Tech Solutions{% endblock %}
+
+{% set NOMBRE_ESTADO = {'pendiente': 'Pendiente', 'en_revision': 'En revisión', 'respondido': 'Respondido'} %}
+
+{% block content %}
+<section class="vista">
+  <a href="{{ url_for('admin_dashboard') }}" class="vista-volver">← Volver al panel</a>
+
+  <div class="vista-card">
+    <h1>Reclamos</h1>
+    <p>{% if ver_respondidos %}Reclamos ya respondidos (solo lectura).{% else %}Reclamos pendientes y en revisión.{% endif %}</p>
+    <div class="vista-links">
+      {% if ver_respondidos %}
+      <a href="{{ url_for('reclamos_admin.bandeja') }}">Ver pendientes y en revisión</a>
+      {% else %}
+      <a href="{{ url_for('reclamos_admin.bandeja', ver='respondidos') }}">Ver respondidos</a>
+      {% endif %}
+    </div>
+  </div>
+
+  {% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% for categoria, mensaje in mensajes %}
+      <p class="msg msg-{{ categoria }}">{{ mensaje }}</p>
+    {% endfor %}
+  {% endwith %}
+
+  {% if reclamos %}
+  <div class="admin-table-section">
+    <table class="admin-table">
+      <thead>
+        <tr><th>#</th><th>Cliente</th><th>Fecha</th><th>Estado</th><th>Descripción</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for r in reclamos %}
+        <tr>
+          <td>{{ r.id }}</td>
+          <td>{{ r.usuario.nombre }} {{ r.usuario.apellido or '' }}</td>
+          <td>{{ r.fecha_ingreso.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td><span class="chip chip-{{ r.estado }}">{{ NOMBRE_ESTADO.get(r.estado, r.estado) }}</span></td>
+          <td>{{ r.descripcion|truncate(90) }}</td>
+          <td><a href="{{ url_for('reclamos_admin.detalle', reclamo_id=r.id) }}">Abrir</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="vista-card"><p>No hay reclamos {% if ver_respondidos %}respondidos{% else %}pendientes ni en revisión{% endif %}.</p></div>
+  {% endif %}
+</section>
+
+<style>
+    .chip { display: inline-block; padding: .15rem .6rem; border-radius: 999px; font-size: .8rem; font-weight: 600; }
+    .chip-pendiente { background: #fef3c7; color: #92400e; }
+    .chip-en_revision { background: #dbeafe; color: #1e40af; }
+    .chip-respondido { background: #dcfce7; color: #166534; }
+</style>
+{% endblock %}
