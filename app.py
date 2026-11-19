@@ -12,7 +12,9 @@ from auth.routes import auth_bp, oauth
 from models import ESTADO_PENDIENTE, ESTADOS, PRIORIDADES, ServicioContratado, Solicitud, Usuario, db
 
 # --- Imports por persona: cada uno agrega los suyos solo en su seccion ---
+
 # --- Valentina ---
+from catalogo.routes import catalogo_bp  # HU-05: catálogo y contratación de servicios
 
 # --- Franco ---
 
@@ -70,6 +72,8 @@ app.register_blueprint(solicitudes_cliente_bp)
 
 # --- Blueprints por persona: cada uno registra los suyos solo en su seccion ---
 # --- Valentina ---
+app.register_blueprint(catalogo_bp)  # HU-05: catálogo y contratación de servicios
+
 
 # --- Franco ---
 

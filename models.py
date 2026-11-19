@@ -313,8 +313,9 @@ class TokenAPI(db.Model):
 # =====================================================================
 
 # --- Valentina ---
+# HU-05: aviso al administrador cuando un cliente contrata un servicio
+EVENTO_NUEVA_CONTRATACION = "nueva_contratacion"
 
-# --- Franco ---
 # --- Franco ---
 # HU-09: archivos adjuntos de una solicitud
 ESTADOS_CON_CARGA = (ESTADO_PENDIENTE, ESTADO_EN_CURSO)   # en estos estados se puede subir
