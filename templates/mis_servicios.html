@@ -30,7 +30,7 @@
     {% else %}
     <div class="empty-state">
         <p>Todavía no tenés servicios contratados.</p>
-        <a href="#" class="btn-primary">Ver catálogo de servicios</a>
+        <a href="{{ url_for('catalogo.listar') }}" class="btn-primary">Ver catálogo de servicios</a>
     </div>
     {% endif %}
 </div>

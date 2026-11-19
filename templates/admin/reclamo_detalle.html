@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Reclamo #{{ reclamo.id }} · Tech Solutions{% endblock %}
+
+{% set NOMBRE_ESTADO = {'pendiente': 'Pendiente', 'en_revision': 'En revisión', 'respondido': 'Respondido'} %}
+
+{% block content %}
+<section class="vista vista-angosta">
+  <a href="{{ url_for('reclamos_admin.bandeja') }}" class="vista-volver">← Volver a reclamos</a>
+
+  {% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% for categoria, mensaje in mensajes %}
+      <p class="msg msg-{{ categoria }}">{{ mensaje }}</p>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="vista-card">
+    <h1>Reclamo #{{ reclamo.id }}</h1>
+    <dl class="datos">
+      <dt>Cliente</dt>
+      <dd>{{ reclamo.usuario.nombre }} {{ reclamo.usuario.apellido or '' }} ({{ reclamo.usuario.email }})</dd>
+
+      <dt>Servicio</dt>
+      <dd>{{ reclamo.servicio.nombre if reclamo.servicio else 'Sin asociar' }}</dd>
+
+      <dt>Solicitud</dt>
+      <dd>
+        {% if reclamo.solicitud %}
+        <a href="{{ url_for('solicitudes_admin.detalle', solicitud_id=reclamo.solicitud.id) }}">#{{ reclamo.solicitud.id }}</a>
+        {% else %}Sin asociar{% endif %}
+      </dd>
+
+      <dt>Estado</dt>
+      <dd><span class="chip chip-{{ reclamo.estado }}">{{ NOMBRE_ESTADO.get(reclamo.estado, reclamo.estado) }}</span></dd>
+
+      <dt>Ingresó</dt>
+      <dd>{{ reclamo.fecha_ingreso.strftime('%d/%m/%Y %H:%M') }}</dd>
+
+      <dt>Descripción</dt>
+      <dd class="texto-largo">{{ reclamo.descripcion }}</dd>
+    </dl>
+  </div>
+
+  {% if reclamo.estado == 'respondido' %}
+  <div class="vista-card">
+    <h2>Respuesta</h2>
+    <dl class="datos">
+      <dt>Respondió</dt>
+      <dd>{% if reclamo.respuesta and reclamo.respuesta.admin %}{{ reclamo.respuesta.admin.nombre }} {{ reclamo.respuesta.admin.apellido or '' }}{% else %}Administración{% endif %}</dd>
+
+      <dt>Fecha</dt>
+      <dd>{% if reclamo.respuesta %}{{ reclamo.respuesta.fecha.strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</dd>
+
+      <dt>Respuesta</dt>
+      <dd class="texto-largo">{% if reclamo.respuesta %}{{ reclamo.respuesta.texto }}{% else %}—{% endif %}</dd>
+    </dl>
+    <p class="msg msg-info">Este reclamo ya fue respondido: se muestra en modo lectura.</p>
+  </div>
+  {% else %}
+  <div class="vista-card">
+    <h2>Acciones</h2>
+    {% if reclamo.estado == 'pendiente' %}
+    <form class="form-acciones" method="post" action="{{ url_for('reclamos_admin.en_revision', reclamo_id=reclamo.id) }}">
+      <button type="submit" class="btn-secundario">Marcar como en revisión</button>
+      <small>Útil si necesitás más información antes de responder. Se avisa al cliente.</small>
+    </form>
+    {% endif %}
+
+    <form class="form-respuesta" method="post" action="{{ url_for('reclamos_admin.responder', reclamo_id=reclamo.id) }}" novalidate>
+      <label for="respuesta">Respuesta al cliente</label>
+      <textarea id="respuesta" name="respuesta" rows="5" maxlength="{{ max_respuesta }}"
+                placeholder="Escribí la respuesta."
+                {% if error %}autofocus aria-invalid="true"{% endif %}>{{ texto }}</textarea>
+      {% if error %}<p class="msg msg-error">{{ error }}</p>{% endif %}
+      <div><button type="submit" class="btn-primary">Enviar respuesta</button></div>
+    </form>
+  </div>
+  {% endif %}
+</section>
+
+<style>
+    .chip { display: inline-block; padding: .15rem .6rem; border-radius: 999px; font-size: .8rem; font-weight: 600; }
+    .chip-pendiente { background: #fef3c7; color: #92400e; }
+    .chip-en_revision { background: #dbeafe; color: #1e40af; }
+    .chip-respondido { background: #dcfce7; color: #166534; }
+    .texto-largo { white-space: pre-wrap; }
+    .form-respuesta { display: flex; flex-direction: column; gap: .6rem; margin-top: 1.25rem; }
+    .form-respuesta label { font-weight: 600; }
+    .form-respuesta textarea {
+        padding: .7rem; font: inherit; border-radius: 8px; resize: vertical;
+        border: 1px solid var(--border); background: var(--white); color: var(--text);
+    }
+    .form-acciones small { color: var(--text-muted); }
+</style>
+{% endblock %}

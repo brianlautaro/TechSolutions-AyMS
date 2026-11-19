@@ -10,26 +10,31 @@
 
     <div class="vista-acciones">
 
-    {# Accesos del cliente. Cada persona agrega los suyos solo en su seccion. #}
-    {% if not is_admin %}
+      {# Accesos del cliente. Cada persona agrega los suyos solo en su seccion. #}
+      {% if not is_admin %}
 
-    {# --- HU-08 (Abril): registrar solicitud --- #}
-    <a href="{{ url_for('solicitudes_cliente.nueva') }}" class="btn-primary">Solicitar una modificación</a>
+      {# --- HU-08 (Abril): registrar solicitud --- #}
+      <a href="{{ url_for('solicitudes_cliente.nueva') }}" class="btn-primary">Solicitar una modificación</a>
 
-    {# --- Valentina --- #}
+      {# --- Valentina --- #}
+      {# --- HU-05: catálogo de servicios --- #}
+      <a href="{{ url_for('catalogo.listar') }}" class="btn-primary">Catálogo de servicios</a>
 
-    {# --- Franco --- #}
-    {# --- HU-10: consultar mis solicitudes --- #}
-    <a href="{{ url_for('mis_solicitudes.lista') }}" class="btn-primary">Mis solicitudes</a>
+      {# --- Franco --- #}
+      {# --- HU-10: consultar mis solicitudes --- #}
+      <a href="{{ url_for('mis_solicitudes.lista') }}" class="btn-primary">Mis solicitudes</a>
 
-    {# --- Abril --- #}
-        <a href="{{ url_for('cambio_plan_admin.listar') }}">Cambios de plan</a>  {# HU-07 #}
+      {# --- Abril --- #}
+      {# --- HU-07: solicitar cambio de plan --- #}
+      <a href="{{ url_for('cambio_plan.planes') }}" class="btn-primary">Cambiar de plan</a>
 
-    {# --- Brian --- #}
+      {# --- Brian --- #}
+      {# --- HU-16: presentar un reclamo --- #}
+      <a href="{{ url_for('reclamos_cliente.nuevo') }}" class="btn-primary">Presentar un reclamo</a>
 
-    {# --- Aristides --- #}
+      {# --- Aristides --- #}
 
-    {% endif %}
+      {% endif %}
     </div>
   </div>
 </section>

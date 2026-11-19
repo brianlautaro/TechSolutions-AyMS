@@ -313,9 +313,28 @@ class TokenAPI(db.Model):
 # =====================================================================
 
 # --- Valentina ---
+# HU-05: aviso al administrador cuando un cliente contrata un servicio
+EVENTO_NUEVA_CONTRATACION = "nueva_contratacion"
+
 
 # --- Franco ---
-# --- Franco ---
+# HU-23: registro de la actividad de los clientes (solo se agrega, nunca se modifica)
+ACCION_INICIO_SESION = "inicio_sesion"
+ACCION_SOLICITUD = "solicitud_abierta"
+ACCION_ADJUNTO = "archivo_adjuntado"
+ACCION_RECLAMO = "reclamo_presentado"
+
+
+class ActividadCliente(db.Model):
+    __tablename__ = "actividad_cliente"
+
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
+    tipo_accion = db.Column(db.String(30), nullable=False)
+    detalle = db.Column(db.String(200))
+    fecha = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    usuario = db.relationship("Usuario")
+    
 # HU-09: archivos adjuntos de una solicitud
 ESTADOS_CON_CARGA = (ESTADO_PENDIENTE, ESTADO_EN_CURSO)   # en estos estados se puede subir
 MAX_ADJUNTOS = 5                                          # archivos por solicitud
@@ -377,3 +396,42 @@ class SolicitudCambioPlan(db.Model):
 # --- Brian ---
 
 # --- Aristides ---
+
+# HU-17: eventos de notificación al cliente por un reclamo y largo máximo de la respuesta
+EVENTO_RECLAMO_EN_REVISION = "reclamo_en_revision"
+EVENTO_RECLAMO_RESPONDIDO = "reclamo_respondido"
+MAX_RESPUESTA_RECLAMO = 1000
+
+
+class RespuestaReclamo(db.Model):
+    """HU-17: respuesta del administrador a un reclamo (una por reclamo)."""
+    __tablename__ = "respuesta_reclamo"
+
+    id = db.Column(db.Integer, primary_key=True)
+    reclamo_id = db.Column(db.Integer, db.ForeignKey("reclamo.id"), nullable=False, unique=True)
+    admin_id = db.Column(db.Integer, db.ForeignKey("usuario.id"))
+    texto = db.Column(db.Text, nullable=False)
+    fecha = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    # "respuesta" queda disponible como reclamo.respuesta (sin tocar la clase Reclamo)
+    reclamo = db.relationship("Reclamo", backref=db.backref("respuesta", uselist=False))
+    admin = db.relationship("Usuario")
+
+# HU-18: acciones que el administrador hace sobre la cuenta de un cliente
+ACCION_CLIENTE_EDICION = "edicion"
+ACCION_CLIENTE_BAJA = "baja"
+
+
+class HistorialCliente(db.Model):
+    """HU-18: registro de cambios del administrador sobre un cliente (fecha de cada modificación)."""
+    __tablename__ = "historial_cliente"
+
+    id = db.Column(db.Integer, primary_key=True)
+    cliente_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
+    admin_id = db.Column(db.Integer, db.ForeignKey("usuario.id"))
+    accion = db.Column(db.String(20), nullable=False)
+    detalle = db.Column(db.String(300), nullable=False)
+    fecha = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    cliente = db.relationship("Usuario", foreign_keys=[cliente_id])
+    admin = db.relationship("Usuario", foreign_keys=[admin_id])

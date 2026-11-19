@@ -12,10 +12,13 @@ from auth.routes import auth_bp, oauth
 from models import ESTADO_PENDIENTE, ESTADOS, PRIORIDADES, ServicioContratado, Solicitud, Usuario, db
 
 # --- Imports por persona: cada uno agrega los suyos solo en su seccion ---
+
 # --- Valentina ---
+from catalogo.routes import catalogo_bp  # HU-05: catálogo y contratación de servicios
 
 # --- Franco ---
-
+from actividad.admin_routes import actividad_admin_bp  # HU-23: el admin consulta la actividad
+from actividad.registro import iniciar_registro_actividad  # HU-23: registro de actividad de clientes
 from adjuntos.routes import adjuntos_bp
 from mis_solicitudes.routes import mis_solicitudes_bp # HU-10: el cliente consulta el estado de sus solicitudes (solo lectura).
 
@@ -27,6 +30,10 @@ from planes.admin_routes import planes_admin_bp  # HU-19: gestionar planes
 # --- Brian ---
 
 # --- Aristides ---
+from reclamos.admin_routes import reclamos_admin_bp  # HU-17: responder reclamos
+from reclamos.clientes_route import reclamos_cliente_bp  # HU-16: presentar reclamo
+
+from clientes.admin_routes import clientes_admin_bp  # HU-18: gestionar clientes
 
 load_dotenv()
 
@@ -66,12 +73,17 @@ app.register_blueprint(solicitudes_cliente_bp)
 
 # --- Blueprints por persona: cada uno registra los suyos solo en su seccion ---
 # --- Valentina ---
+app.register_blueprint(catalogo_bp)  # HU-05: catálogo y contratación de servicios
+
 
 # --- Franco ---
 
+app.register_blueprint(actividad_admin_bp)  # HU-23: el admin consulta la actividad
+iniciar_registro_actividad() # HU-23: empieza a anotar la actividad de los clientes
 app.register_blueprint(adjuntos_bp)
 
 app.register_blueprint(mis_solicitudes_bp) # HU-10: el cliente consulta el estado de sus solicitudes (solo lectura).
+
 
 
 # --- Abril ---
@@ -80,8 +92,15 @@ app.register_blueprint(servicios_admin_bp)  # HU-20: gestionar servicios
 app.register_blueprint(planes_admin_bp)  # HU-19: gestionar planes
 
 # --- Brian ---
+app.register_blueprint(reclamos_cliente_bp)  # HU-16: presentar reclamo
 
 # --- Aristides ---
+app.register_blueprint(reclamos_admin_bp)  # HU-17: responder reclamos
+# HU-16 (Brian) quedó sin registrar y /reclamos/nuevo daba 404. Si Brian lo registra en su
+# sección, este chequeo evita registrarlo dos veces.
+
+
+app.register_blueprint(clientes_admin_bp)  # HU-18: gestionar clientes
 
 
 @login_manager.user_loader

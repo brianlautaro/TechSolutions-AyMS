@@ -192,6 +192,39 @@ def run_seed():
                   fecha_resolucion=ahora - timedelta(days=10)),
     ])
 
+    # HU-17: reclamos de ejemplo (uno pendiente, uno en revisión, uno recién llegado y uno respondido)
+    from models import (
+        Reclamo, RespuestaReclamo, RECLAMO_EN_REVISION, RECLAMO_PENDIENTE, RECLAMO_RESPONDIDO,
+    )
+
+    db.session.add_all([
+        Reclamo(
+            usuario=mariana, servicio=servicios[0], estado=RECLAMO_PENDIENTE,
+            descripcion="No recibimos el informe mensual que habíamos acordado.",
+            fecha_ingreso=ahora - timedelta(days=2),
+        ),
+        Reclamo(
+            usuario=sofia, servicio=servicios[2], estado=RECLAMO_EN_REVISION,
+            descripcion="Cambiaron al responsable de nuestro proyecto sin avisarnos.",
+            fecha_ingreso=ahora - timedelta(days=1),
+        ),
+        Reclamo(
+            usuario=julieta, servicio=servicios[7], estado=RECLAMO_PENDIENTE,
+            descripcion="La reunión de ayer no se realizó y nadie nos avisó.",
+            fecha_ingreso=ahora - timedelta(hours=5),
+        ),
+    ])
+    reclamo_respondido = Reclamo(
+        usuario=tomas, servicio=servicios[6], estado=RECLAMO_RESPONDIDO,
+        descripcion="La capacitación del viernes empezó una hora tarde.",
+        fecha_ingreso=ahora - timedelta(days=6),
+    )
+    db.session.add(reclamo_respondido)
+    db.session.add(RespuestaReclamo(
+        reclamo=reclamo_respondido, admin=admin, fecha=ahora - timedelta(days=5),
+        texto="Pedimos disculpas por la demora. Reprogramamos la capacitación sin costo.",
+    ))
+
     db.session.commit()
     print("Datos de prueba listos.")
 

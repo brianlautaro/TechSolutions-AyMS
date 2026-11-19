@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Clientes · Tech Solutions{% endblock %}
+
+{% block content %}
+<section class="vista">
+  <a href="{{ url_for('admin_dashboard') }}" class="vista-volver">← Volver al panel</a>
+
+  <div class="vista-card">
+    <h1>Clientes</h1>
+    <p>{{ clientes|length }} cliente{{ '' if clientes|length == 1 else 's' }} registrado{{ '' if clientes|length == 1 else 's' }}.</p>
+  </div>
+
+  {% with mensajes = get_flashed_messages(with_categories=true) %}
+    {% for categoria, mensaje in mensajes %}
+      <p class="msg msg-{{ categoria }}">{{ mensaje }}</p>
+    {% endfor %}
+  {% endwith %}
+
+  {% if clientes %}
+  <div class="admin-table-section">
+    <table class="admin-table">
+      <thead>
+        <tr><th>Nombre</th><th>Correo</th><th>Plan</th><th>Estado</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for c in clientes %}
+        <tr>
+          <td>{{ c.nombre }} {{ c.apellido or '' }}</td>
+          <td>{{ c.email }}</td>
+          <td>{{ c.plan.nombre if c.plan else 'Sin plan' }}</td>
+          <td><span class="chip {{ 'chip-activo' if c.activo else 'chip-inactivo' }}">{{ 'Activo' if c.activo else 'Inactivo' }}</span></td>
+          <td><a href="{{ url_for('clientes_admin.ficha', cliente_id=c.id) }}">Ver ficha</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="vista-card"><p>Todavía no hay clientes registrados.</p></div>
+  {% endif %}
+</section>
+
+<style>
+    .chip { display: inline-block; padding: .15rem .6rem; border-radius: 999px; font-size: .8rem; font-weight: 600; }
+    .chip-activo { background: #dcfce7; color: #166534; }
+    .chip-inactivo { background: #fee2e2; color: #991b1b; }
+</style>
+{% endblock %}
