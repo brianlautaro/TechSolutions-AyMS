@@ -31,7 +31,7 @@ from planes.admin_routes import planes_admin_bp  # HU-19: gestionar planes
 
 # --- Aristides ---
 from reclamos.admin_routes import reclamos_admin_bp  # HU-17: responder reclamos
-from reclamos.clientes_route import reclamos_cliente_bp  # HU-16 (Brian): ver el registro más abajo
+from reclamos.clientes_route import reclamos_cliente_bp  # HU-16: presentar reclamo
 
 from clientes.admin_routes import clientes_admin_bp  # HU-18: gestionar clientes
 
@@ -91,13 +91,13 @@ app.register_blueprint(servicios_admin_bp)  # HU-20: gestionar servicios
 app.register_blueprint(planes_admin_bp)  # HU-19: gestionar planes
 
 # --- Brian ---
+app.register_blueprint(reclamos_cliente_bp)  # HU-16: presentar reclamo
 
 # --- Aristides ---
 app.register_blueprint(reclamos_admin_bp)  # HU-17: responder reclamos
 # HU-16 (Brian) quedó sin registrar y /reclamos/nuevo daba 404. Si Brian lo registra en su
 # sección, este chequeo evita registrarlo dos veces.
-if "reclamos_cliente" not in app.blueprints:
-    app.register_blueprint(reclamos_cliente_bp)
+
 
 app.register_blueprint(clientes_admin_bp)  # HU-18: gestionar clientes
 
