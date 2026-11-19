@@ -122,7 +122,14 @@ def run_seed():
 
     # --- Franco ---
 
-    # --- Abril ---
+        # --- Abril ---
+    # HU-20: categoría de cada servicio del catálogo (mismo orden que SERVICIOS)
+    categorias = [
+        "Gestión empresarial", "Marketing y comunicación", "Gestión empresarial",
+        "Tecnología", "Operaciones", "Tecnología", "Gestión empresarial", "Legal",
+    ]
+    for servicio, categoria in zip(servicios, categorias):
+        servicio.categoria = categoria
 
     # --- Brian ---
 
