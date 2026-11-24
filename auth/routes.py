@@ -138,6 +138,8 @@ def registro():
             error = "Completá nombre, apellido y correo."
         elif len(password) < 8:
             error = "La contraseña debe tener al menos 8 caracteres."
+        elif not any(c.isdigit() for c in password):
+            error = "La contraseña debe incluir al menos un número."
         elif password != repetir:
             error = "Las contraseñas no coinciden."
         elif Usuario.query.filter_by(email=datos["email"]).first():
