@@ -58,4 +58,23 @@ si cambiás una columna de un modelo que ya existe, avisá al grupo (todos borra
 
 ## Cómo ejecutar el proyecto
 
-*(Se completa con el tutorial de HU-25 cuando esté lista la base.)*
+Requisitos: Python 3.12 o superior. La demo usa SQLite, no hace falta instalar una base de datos.
+
+```powershell
+python -m venv venv
+venv\Scripts\Activate.ps1          # macOS/Linux: source venv/bin/activate
+pip install -r requirements.txt
+Copy-Item .env.example .env        # y dejar una SECRET_KEY en .env
+python app.py
+```
+
+Abrir **http://127.0.0.1:5000**. La primera vez se cargan datos de prueba.
+
+| Rol | Correo | Contraseña |
+|---|---|---|
+| Administrador | `admin@techsolutions.com` | `Demo1234!` |
+| Cliente | `mariana@ejemplo.com` (y otros, ver el tutorial) | `Demo1234!` |
+
+Guía completa, con el recorrido por rol, la API y los problemas frecuentes: [`docs/TUTORIAL.md`](docs/TUTORIAL.md).
+Diagrama de estados: [`docs/diagrama-estados.png`](docs/diagrama-estados.png).
+
